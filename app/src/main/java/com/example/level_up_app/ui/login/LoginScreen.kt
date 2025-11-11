@@ -31,7 +31,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(viewModel: LoginViewModel) {
+fun LoginScreen(viewModel: LoginViewModel, onLoginSuccess: () -> Unit) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -104,7 +104,10 @@ fun LoginScreen(viewModel: LoginViewModel) {
                 }
 
                 Button(
-                    onClick = { viewModel.login() }, modifier = Modifier
+                    onClick = { 
+                        viewModel.login()
+                        onLoginSuccess()
+                    }, modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 16.dp)
                 ) {

@@ -34,7 +34,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
-    onNavigateToCreateAccount: () -> Unit = {}
+    onNavigateToCreateAccount: () -> Unit = {},
+    onNavigateToRememberPass: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -99,12 +100,13 @@ fun LoginScreen(
                 }
 
                 TextButton(
-                    onClick = { /* placeholder - no persistence */ },
+                    onClick = { onNavigateToRememberPass() },
                     modifier = Modifier
                         .align(Alignment.Start)
                         .padding(top = 8.dp)
                 ) {
                     Text("¿Olvidaste tu contraseña? Recuperar contraseña")
+
                 }
 
                 // Navigation to create account

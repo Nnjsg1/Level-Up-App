@@ -30,7 +30,7 @@ fun Fondo(){
             modifier = Modifier.fillMaxSize().padding(25.dp),
             color = Color.Blue.copy(alpha = 0.0f)
         ) {
-            Text("Hola Mundo",
+            Text("Caballero Weko: Cancion de Seda",
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.bodyLarge)
         }

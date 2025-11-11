@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.level_up_app.ui.login.LoginScreen
 import com.example.level_up_app.ui.login.LoginViewModel
 import com.example.level_up_app.ui.login.CreateAccountScreen
+import com.example.level_up_app.ui.login.RememberPassScreen
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,6 +21,7 @@ import com.example.level_up_app.ui.theme.LevelUpAppTheme
 sealed class Screen {
     object Login : Screen()
     object CreateAccount : Screen()
+    object RememberPass : Screen()
 }
 
 class MainActivity : ComponentActivity() {
@@ -32,20 +34,24 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             LevelUpAppTheme {
-                // simple in-memory navigation state (Login <-> CreateAccount)
+
                 var currentScreen by remember { mutableStateOf<Screen>(Screen.Login) }
 
                 when (currentScreen) {
                     is Screen.Login -> LoginScreen(
                         loginViewModel,
-                        onNavigateToCreateAccount = { currentScreen = Screen.CreateAccount }
+                        onNavigateToCreateAccount = { currentScreen = Screen.CreateAccount },
+                        onNavigateToRememberPass = { currentScreen = Screen.RememberPass }
                     )
                     is Screen.CreateAccount -> CreateAccountScreen(
                         onCreate = { name, email, password, dob ->
-                            // TODO: implement creation logic; for now go back to login
+
                             currentScreen = Screen.Login
                         },
                         onBackToLogin = { currentScreen = Screen.Login }
+                    )
+                    is Screen.RememberPass -> RememberPassScreen(
+                        onBack = { currentScreen = Screen.Login }
                     )
                 }
             }

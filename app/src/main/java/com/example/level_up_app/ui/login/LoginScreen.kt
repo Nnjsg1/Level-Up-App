@@ -1,6 +1,5 @@
 package com.example.level_up_app.ui.login
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,11 +31,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(
-    viewModel: LoginViewModel,
-    onNavigateToCreateAccount: () -> Unit = {},
-    onNavigateToRememberPass: () -> Unit = {}
-) {
+fun LoginScreen(viewModel: LoginViewModel) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -47,7 +42,7 @@ fun LoginScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()){
         Fondo()
         Scaffold(
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -100,24 +95,13 @@ fun LoginScreen(
                 }
 
                 TextButton(
-                    onClick = { onNavigateToRememberPass() },
+                    onClick = { /* placeholder - no persistence */ },
                     modifier = Modifier
                         .align(Alignment.Start)
                         .padding(top = 8.dp)
                 ) {
                     Text("¿Olvidaste tu contraseña? Recuperar contraseña")
-
                 }
-
-                // Navigation to create account
-                Text(
-                    text = "¿No tienes cuenta? Crear cuenta",
-                    modifier = Modifier
-                        .align(Alignment.Start)
-                        .padding(top = 8.dp)
-                        .clickable { onNavigateToCreateAccount() },
-                    color = MaterialTheme.colorScheme.primary
-                )
 
                 Button(
                     onClick = { viewModel.login() }, modifier = Modifier

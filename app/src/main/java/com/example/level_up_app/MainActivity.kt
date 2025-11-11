@@ -16,7 +16,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.level_up_app.screen.Fondo
 
 import com.example.level_up_app.ui.theme.LevelUpAppTheme
 
@@ -30,12 +29,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             LevelUpAppTheme {
-
-                Fondo()
                 LoginScreen(loginViewModel)
-
-              
-
             }
         }
     }

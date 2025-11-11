@@ -8,16 +8,19 @@ import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.ViewModelProvider
 import com.example.level_up_app.ui.login.LoginScreen
 import com.example.level_up_app.ui.login.LoginViewModel
+import com.example.level_up_app.ui.login.CreateAccountScreen
 
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 import com.example.level_up_app.ui.theme.LevelUpAppTheme
+
+sealed class Screen {
+    object Login : Screen()
+    object CreateAccount : Screen()
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,7 +32,22 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             LevelUpAppTheme {
-                LoginScreen(loginViewModel)
+                // simple in-memory navigation state (Login <-> CreateAccount)
+                var currentScreen by remember { mutableStateOf<Screen>(Screen.Login) }
+
+                when (currentScreen) {
+                    is Screen.Login -> LoginScreen(
+                        loginViewModel,
+                        onNavigateToCreateAccount = { currentScreen = Screen.CreateAccount }
+                    )
+                    is Screen.CreateAccount -> CreateAccountScreen(
+                        onCreate = { name, email, password, dob ->
+                            // TODO: implement creation logic; for now go back to login
+                            currentScreen = Screen.Login
+                        },
+                        onBackToLogin = { currentScreen = Screen.Login }
+                    )
+                }
             }
         }
     }

@@ -16,17 +16,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.example.level_up_app.ui.components.BottomNavBar
+import com.example.level_up_app.ui.components.TopNavBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainMenu() {
     var selectedIndex by remember { mutableStateOf(0) }
     Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text(text = "Level Up - Principal") }
-            )
-        },
+        topBar = {TopNavBar(selectedIndex = selectedIndex, onItemSelected = { selectedIndex = it })},
         bottomBar = { BottomNavBar(selectedIndex = selectedIndex, onItemSelected = { selectedIndex = it }) }
     ) { innerPadding ->
         Box(
@@ -35,12 +32,7 @@ fun MainMenu() {
                 .padding(innerPadding),
             contentAlignment = Alignment.Center
         ) {
-            when (selectedIndex) {
-                0 -> Text("El", style = MaterialTheme.typography.headlineMedium)
-                1 -> Text("Jesus", style = MaterialTheme.typography.headlineMedium)
-                2 -> Text("es", style = MaterialTheme.typography.headlineMedium)
-                3 -> Text("Entero Weko", style = MaterialTheme.typography.headlineMedium)
-            }
+            Text("jeshu weko")
         }
     }
 }

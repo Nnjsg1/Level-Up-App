@@ -23,11 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    modifier: Modifier = Modifier,
-    onProfile: () -> Unit = {}
+    modifier: Modifier = Modifier
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -35,57 +33,52 @@ fun ProfileScreen(
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var selectedIndex by remember { mutableStateOf(0) }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        bottomBar = { BottomNavBar(selectedIndex = selectedIndex, onItemSelected = { selectedIndex = it }, onProfile = onProfile) }
-    ) { innerPadding ->
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.Start
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.Start
+    ) {
+        // Snackbar host (will appear where placed)
+        SnackbarHost(hostState = snackbarHostState)
+
+        Text(text = "NOMBRE")
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
+        )
+
+        Text(text = "EMAIL", modifier = Modifier.padding(top = 12.dp))
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
+        )
+
+        Text(text = "CONTRASEÑA", modifier = Modifier.padding(top = 12.dp))
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
+        )
+
+        Button(
+            onClick = {
+                scope.launch { snackbarHostState.showSnackbar("Guardado") }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 24.dp)
         ) {
-            Text(text = "NOMBRE")
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-            )
-
-            Text(text = "EMAIL", modifier = Modifier.padding(top = 12.dp))
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-            )
-
-            Text(text = "CONTRASEÑA", modifier = Modifier.padding(top = 12.dp))
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-            )
-
-            Button(
-                onClick = {
-                    scope.launch { snackbarHostState.showSnackbar("Guardado") }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 24.dp)
-            ) {
-                Text(text = "Guardar Cambios")
-            }
+            Text(text = "Guardar Cambios")
         }
-
     }
 }

@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.example.level_up_app.ui.catalog.CatalogScreen
 import com.example.level_up_app.ui.components.BottomNavBar
+import com.example.level_up_app.ui.profile.ProfileScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,6 +73,7 @@ fun MainMenu(
         ) {
             when (selectedIndex) {
                 1 -> CatalogScreen()
+                3 -> ProfileScreen()
                 else -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -81,6 +83,6 @@ fun MainMenu(
                     }
                 }
             }
-        }
-    }
-}
+         }
+     }
+ }

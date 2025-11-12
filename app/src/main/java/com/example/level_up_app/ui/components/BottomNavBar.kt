@@ -57,16 +57,16 @@ fun BottomNavBar(
         NavigationBarItem(
             selected = selectedIndex == 3,
             onClick = {
-                onItemSelected(3)
+                // make profile navigation definitive: only trigger the profile callback
                 onProfile()
-            },
-            icon = {
-                Icon(
-                    imageVector = Icons.Outlined.Person,
-                    contentDescription = "Perfil"
-                )
-            },
-            label = { Text("Perfil") }
-        )
-    }
-}
+             },
+             icon = {
+                 Icon(
+                     imageVector = Icons.Outlined.Person,
+                     contentDescription = "Perfil"
+                 )
+             },
+             label = { Text("Perfil") }
+         )
+     }
+ }

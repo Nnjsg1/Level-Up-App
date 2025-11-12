@@ -20,11 +20,13 @@ import com.example.level_up_app.ui.components.TopNavBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainMenu() {
+fun MainMenu(
+    onProfile: () -> Unit = {}
+) {
     var selectedIndex by remember { mutableStateOf(0) }
     Scaffold(
         topBar = {TopNavBar(selectedIndex = selectedIndex, onItemSelected = { selectedIndex = it })},
-        bottomBar = { BottomNavBar(selectedIndex = selectedIndex, onItemSelected = { selectedIndex = it }) }
+        bottomBar = { BottomNavBar(selectedIndex = selectedIndex, onItemSelected = { selectedIndex = it }, onProfile = onProfile) }
     ) { innerPadding ->
         Box(
             modifier = Modifier

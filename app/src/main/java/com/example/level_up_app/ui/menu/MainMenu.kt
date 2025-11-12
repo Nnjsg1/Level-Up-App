@@ -28,7 +28,7 @@ fun MainMenu() {
                 .padding(innerPadding),
             contentAlignment = Alignment.Center
         ) {
-            Text("Página principal (MainMenu)", style = MaterialTheme.typography.headlineMedium)
+            Text("Página principal", style = MaterialTheme.typography.headlineMedium)
         }
     }
 }

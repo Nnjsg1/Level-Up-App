@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.example.level_up_app.ui.catalog.CatalogScreen
 import com.example.level_up_app.ui.components.BottomNavBar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,10 +64,19 @@ fun MainMenu() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
-            contentAlignment = Alignment.Center
+                .padding(innerPadding)
         ) {
-            Text("Pantalla: $currentScreen")
+            when (selectedIndex) {
+                1 -> CatalogScreen()
+                else -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Pantalla: $currentScreen")
+                    }
+                }
+            }
         }
     }
 }

@@ -16,8 +16,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-
 import com.example.level_up_app.ui.theme.LevelUpAppTheme
+
 
 sealed class Screen {
     object Login : Screen()

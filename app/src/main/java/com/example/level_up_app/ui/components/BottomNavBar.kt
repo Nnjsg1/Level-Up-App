@@ -1,5 +1,6 @@
 package com.example.level_up_app.ui.components
 
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Explore
@@ -14,13 +15,15 @@ import androidx.compose.runtime.Composable
 @Composable
 fun BottomNavBar(
     selectedIndex: Int,
-    onItemSelected: (Int) -> Unit
+    onItemSelected: (Int) -> Unit,
+    onProfile: () -> Unit = {}
 ) {
+    val context = LocalContext.current
     NavigationBar {
         NavigationBarItem(
             selected = selectedIndex == 0,
             onClick = { onItemSelected(0) },
-            icon = { 
+            icon = {
                 Icon(
                     imageVector = Icons.Outlined.Home,
                     contentDescription = "Inicio"
@@ -32,7 +35,7 @@ fun BottomNavBar(
         NavigationBarItem(
             selected = selectedIndex == 1,
             onClick = { onItemSelected(1) },
-            icon = { 
+            icon = {
                 Icon(
                     imageVector = Icons.Outlined.Explore,
                     contentDescription = "Catalogo"
@@ -44,7 +47,7 @@ fun BottomNavBar(
         NavigationBarItem(
             selected = selectedIndex == 2,
             onClick = { onItemSelected(2) },
-            icon = { 
+            icon = {
                 Icon(
                     imageVector = Icons.Outlined.BookmarkBorder,
                     contentDescription = "Noticias"
@@ -55,14 +58,17 @@ fun BottomNavBar(
 
         NavigationBarItem(
             selected = selectedIndex == 3,
-            onClick = { onItemSelected(3) },
-            icon = { 
-                Icon(
-                    imageVector = Icons.Outlined.Person,
-                    contentDescription = "Perfil"
-                )
+            onClick = {
+
+                onProfile()
              },
-            label = { Text("Perfil") }
-        )
-    }
-}
+             icon = {
+                 Icon(
+                     imageVector = Icons.Outlined.Person,
+                     contentDescription = "Perfil"
+                 )
+             },
+             label = { Text("Perfil") }
+         )
+     }
+ }

@@ -1,6 +1,7 @@
 package com.example.level_up_app
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -11,6 +12,7 @@ import com.example.level_up_app.ui.login.LoginViewModel
 import com.example.level_up_app.ui.login.CreateAccountScreen
 import com.example.level_up_app.ui.login.RememberPassScreen
 import com.example.level_up_app.ui.menu.MainMenu
+import com.example.level_up_app.ui.profile.ProfileScreen
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,6 +26,7 @@ sealed class Screen {
     object CreateAccount : Screen()
     object RememberPass : Screen()
     object Main : Screen()
+    object Profile : Screen()
 }
 
 class MainActivity : ComponentActivity() {
@@ -55,7 +58,8 @@ class MainActivity : ComponentActivity() {
                     is Screen.RememberPass -> RememberPassScreen(
                         onBack = { currentScreen = Screen.Login }
                     )
-                    is Screen.Main -> MainMenu()
+                    is Screen.Main -> MainMenu(onProfile = { Log.d("MainActivity","onProfile lambda: navigating to Profile"); currentScreen = Screen.Profile })
+                    is Screen.Profile -> ProfileScreen(onProfile = { Log.d("MainActivity","onProfile lambda invoked while on Profile"); currentScreen = Screen.Profile })
                 }
             }
         }

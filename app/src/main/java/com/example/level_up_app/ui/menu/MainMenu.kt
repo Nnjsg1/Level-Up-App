@@ -26,7 +26,9 @@ import com.example.level_up_app.ui.components.BottomNavBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainMenu() {
+fun MainMenu(
+    onProfile: () -> Unit = {}
+) {
     var selectedIndex by remember { mutableStateOf(0) }
 
     val currentScreen = when (selectedIndex) {
@@ -40,6 +42,7 @@ fun MainMenu() {
     }
 
     Scaffold(
+
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(currentScreen.uppercase()) },
@@ -59,7 +62,8 @@ fun MainMenu() {
                 }
             )
         },
-        bottomBar = { BottomNavBar(selectedIndex = selectedIndex, onItemSelected = { selectedIndex = it }) }
+         bottomBar = { BottomNavBar(selectedIndex = selectedIndex, onItemSelected = { selectedIndex = it }, onProfile = onProfile) }
+
     ) { innerPadding ->
         Box(
             modifier = Modifier

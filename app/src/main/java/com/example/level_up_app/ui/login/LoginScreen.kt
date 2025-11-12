@@ -35,7 +35,8 @@ import kotlinx.coroutines.launch
 fun LoginScreen(
     viewModel: LoginViewModel,
     onNavigateToCreateAccount: () -> Unit = {},
-    onNavigateToRememberPass: () -> Unit = {}
+    onNavigateToRememberPass: () -> Unit = {},
+    onNavigateToMain: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -120,7 +121,7 @@ fun LoginScreen(
                 )
 
                 Button(
-                    onClick = { viewModel.login() }, modifier = Modifier
+                    onClick = { onNavigateToMain() }, modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 16.dp)
                 ) {

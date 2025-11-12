@@ -10,6 +10,7 @@ import com.example.level_up_app.ui.login.LoginScreen
 import com.example.level_up_app.ui.login.LoginViewModel
 import com.example.level_up_app.ui.login.CreateAccountScreen
 import com.example.level_up_app.ui.login.RememberPassScreen
+import com.example.level_up_app.ui.menu.MainMenu
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,6 +23,7 @@ sealed class Screen {
     object Login : Screen()
     object CreateAccount : Screen()
     object RememberPass : Screen()
+    object Main : Screen()
 }
 
 class MainActivity : ComponentActivity() {
@@ -29,7 +31,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-       
         val loginViewModel = ViewModelProvider(this).get(LoginViewModel::class.java)
 
         setContent {
@@ -41,7 +42,8 @@ class MainActivity : ComponentActivity() {
                     is Screen.Login -> LoginScreen(
                         loginViewModel,
                         onNavigateToCreateAccount = { currentScreen = Screen.CreateAccount },
-                        onNavigateToRememberPass = { currentScreen = Screen.RememberPass }
+                        onNavigateToRememberPass = { currentScreen = Screen.RememberPass },
+                        onNavigateToMain = { currentScreen = Screen.Main }
                     )
                     is Screen.CreateAccount -> CreateAccountScreen(
                         onCreate = { name, email, password, dob ->
@@ -53,6 +55,7 @@ class MainActivity : ComponentActivity() {
                     is Screen.RememberPass -> RememberPassScreen(
                         onBack = { currentScreen = Screen.Login }
                     )
+                    is Screen.Main -> MainMenu()
                 }
             }
         }

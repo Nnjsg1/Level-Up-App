@@ -327,14 +327,35 @@ fun ProductDetailDialog(
                         }
                     }
 
-                    // Botón de cerrar al final
-                    Button(
-                        onClick = onDismiss,
+                    // Botones de acción
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 8.dp)
+                            .padding(top = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("Cerrar")
+                        // Botón de Favoritos
+                        Button(
+                            onClick = {
+                                // TODO: Agregar a favoritos
+                            },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondary
+                            )
+                        ) {
+                            Text("Agregar a Favoritos")
+                        }
+
+                        // Botón de Añadir al Carrito
+                        Button(
+                            onClick = {
+                                // TODO: Añadir al carrito
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Añadir al Carrito")
+                        }
                     }
                 }
             }

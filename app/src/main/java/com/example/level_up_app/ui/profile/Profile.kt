@@ -1,27 +1,20 @@
 package com.example.level_up_app.ui.profile
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import com.example.level_up_app.ui.components.BottomNavBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Box
 
 @Composable
 fun ProfileScreen(
@@ -40,7 +33,28 @@ fun ProfileScreen(
             .padding(24.dp),
         horizontalAlignment = Alignment.Start
     ) {
-        // Snackbar host (will appear where placed)
+        //Aqui hago el circulo para almacenar o que muestre una imagen
+        Surface(
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .size(120.dp),
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+        ) {
+            // Use una caja para centrar la imagen y que este en medio y bonito
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Avatar placeholder",
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(64.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+
         SnackbarHost(hostState = snackbarHostState)
 
         Text(text = "NOMBRE")

@@ -61,7 +61,7 @@ fun MainMenu(
                 }
             )
         },
-        bottomBar = { BottomNavBar(selectedIndex = selectedIndex, onItemSelected = { selectedIndex = it }) }
+         bottomBar = { BottomNavBar(selectedIndex = selectedIndex, onItemSelected = { selectedIndex = it }, onProfile = onProfile) }
 
     ) { innerPadding ->
         Box(

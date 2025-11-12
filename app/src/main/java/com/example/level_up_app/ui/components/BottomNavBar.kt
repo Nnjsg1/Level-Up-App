@@ -8,7 +8,8 @@ import androidx.compose.runtime.Composable
 @Composable
 fun BottomNavBar(
     selectedIndex: Int,
-    onItemSelected: (Int) -> Unit
+    onItemSelected: (Int) -> Unit,
+    onProfile: () -> Unit = {}
 ) {
     NavigationBar {
         NavigationBarItem(
@@ -34,7 +35,10 @@ fun BottomNavBar(
 
         NavigationBarItem(
             selected = selectedIndex == 3,
-            onClick = { onItemSelected(3) },
+            onClick = {
+                onItemSelected(3)
+                onProfile()
+            },
             icon = { Text("4") },
             label = { Text("Opción 4") }
         )

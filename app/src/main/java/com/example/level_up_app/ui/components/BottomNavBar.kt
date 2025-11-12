@@ -1,5 +1,6 @@
 package com.example.level_up_app.ui.components
 
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Explore
@@ -17,6 +18,7 @@ fun BottomNavBar(
     onItemSelected: (Int) -> Unit,
     onProfile: () -> Unit = {}
 ) {
+    val context = LocalContext.current
     NavigationBar {
         NavigationBarItem(
             selected = selectedIndex == 0,
@@ -57,7 +59,7 @@ fun BottomNavBar(
         NavigationBarItem(
             selected = selectedIndex == 3,
             onClick = {
-                // make profile navigation definitive: only trigger the profile callback
+
                 onProfile()
              },
              icon = {

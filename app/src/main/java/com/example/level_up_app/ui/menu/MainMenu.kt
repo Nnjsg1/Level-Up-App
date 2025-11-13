@@ -25,6 +25,7 @@ import com.example.level_up_app.ui.catalog.CatalogScreen
 import com.example.level_up_app.ui.cart.CartScreen
 import com.example.level_up_app.ui.components.BottomNavBar
 import com.example.level_up_app.ui.profile.ProfileScreen
+import com.example.level_up_app.ui.main.HomeScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,6 +74,7 @@ fun MainMenu(
                 .padding(innerPadding)
         ) {
             when (selectedIndex) {
+                0 -> HomeScreen()
                 1 -> CatalogScreen()
                 3 -> ProfileScreen()
                 5 -> CartScreen()

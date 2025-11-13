@@ -4,8 +4,13 @@
 
     <!-- Permiso para usar la cámara -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Permiso para usar el NFC  -->
+    <uses-permission android:name="android.permission.NFC" />
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <uses-feature  android:name="android.hardware.nfc" android:required="true" />
+
 
     <application
         android:allowBackup="true"

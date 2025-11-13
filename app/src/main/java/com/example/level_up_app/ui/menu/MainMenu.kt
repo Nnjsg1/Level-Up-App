@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.example.level_up_app.ui.catalog.CatalogScreen
+import com.example.level_up_app.ui.cart.CartScreen
 import com.example.level_up_app.ui.components.BottomNavBar
 import com.example.level_up_app.ui.profile.ProfileEditScreen
 import com.example.level_up_app.ui.profile.ProfileScreen
@@ -80,6 +81,7 @@ fun MainMenu(
         ) {
             when (selectedIndex) {
                 1 -> CatalogScreen()
+                5 -> CartScreen()
                 3 -> {
                     if (isEditing) {
                         ProfileEditScreen(onSave = { _, _, _ -> /* no-op for now */ }, onBack = { isEditing = false })

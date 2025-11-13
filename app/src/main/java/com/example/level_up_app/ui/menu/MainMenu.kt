@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import com.example.level_up_app.ui.catalog.CatalogScreen
 import com.example.level_up_app.ui.cart.CartScreen
 import com.example.level_up_app.ui.components.BottomNavBar
+import com.example.level_up_app.ui.news.NewsScreen
 import com.example.level_up_app.ui.profile.ProfileScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,6 +75,7 @@ fun MainMenu(
         ) {
             when (selectedIndex) {
                 1 -> CatalogScreen()
+                2 -> NewsScreen()
                 3 -> ProfileScreen()
                 5 -> CartScreen()
                 else -> {

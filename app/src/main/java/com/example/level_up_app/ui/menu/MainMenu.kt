@@ -26,6 +26,7 @@ import com.example.level_up_app.ui.cart.CartScreen
 import com.example.level_up_app.ui.components.BottomNavBar
 import com.example.level_up_app.ui.profile.ProfileScreen
 import com.example.level_up_app.ui.main.HomeScreen
+import com.example.level_up_app.ui.favorites.FavoritesScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,6 +78,7 @@ fun MainMenu(
                 0 -> HomeScreen()
                 1 -> CatalogScreen()
                 3 -> ProfileScreen()
+                4 -> FavoritesScreen()
                 5 -> CartScreen()
                 else -> {
                     Box(

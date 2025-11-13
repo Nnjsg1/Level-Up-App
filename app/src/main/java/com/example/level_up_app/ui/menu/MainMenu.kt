@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import com.example.level_up_app.ui.catalog.CatalogScreen
 import com.example.level_up_app.ui.cart.CartScreen
 import com.example.level_up_app.ui.components.BottomNavBar
+import com.example.level_up_app.ui.profile.ProfileEditScreen
 import com.example.level_up_app.ui.profile.ProfileScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,6 +33,8 @@ fun MainMenu(
     onProfile: () -> Unit = {}
 ) {
     var selectedIndex by remember { mutableStateOf(0) }
+    // local state to toggle between viewing profile and editing it
+    var isEditing by remember { mutableStateOf(false) }
 
     val currentScreen = when (selectedIndex) {
         0 -> "Inicio"
@@ -64,7 +67,11 @@ fun MainMenu(
                 }
             )
         },
-         bottomBar = { BottomNavBar(selectedIndex = selectedIndex, onItemSelected = { selectedIndex = it }, onProfile = onProfile) }
+         // when user selects another tab, make sure we leave edit mode
+         bottomBar = { BottomNavBar(selectedIndex = selectedIndex, onItemSelected = {
+             selectedIndex = it
+             if (it != 3) isEditing = false
+         }, onProfile = onProfile) }
 
     ) { innerPadding ->
         Box(
@@ -74,8 +81,14 @@ fun MainMenu(
         ) {
             when (selectedIndex) {
                 1 -> CatalogScreen()
-                3 -> ProfileScreen()
                 5 -> CartScreen()
+                3 -> {
+                    if (isEditing) {
+                        ProfileEditScreen(onSave = { _, _, _ -> /* no-op for now */ }, onBack = { isEditing = false })
+                    } else {
+                        ProfileScreen(onEditClicked = { isEditing = true })
+                    }
+                }
                 else -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),

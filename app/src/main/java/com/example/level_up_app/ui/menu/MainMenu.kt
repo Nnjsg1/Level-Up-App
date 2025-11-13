@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.example.level_up_app.ui.catalog.CatalogScreen
+import com.example.level_up_app.ui.cart.CartScreen
 import com.example.level_up_app.ui.components.BottomNavBar
 import com.example.level_up_app.ui.profile.ProfileScreen
 
@@ -74,6 +75,7 @@ fun MainMenu(
             when (selectedIndex) {
                 1 -> CatalogScreen()
                 3 -> ProfileScreen()
+                5 -> CartScreen()
                 else -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),

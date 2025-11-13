@@ -21,6 +21,8 @@ import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import com.example.level_up_app.data.Product
 import com.example.level_up_app.data.ProductRepository
+import com.example.level_up_app.data.CartRepository
+import kotlinx.coroutines.launch
 
 // Función para formatear precios en formato chileno
 fun formatPrice(price: Double): String {
@@ -158,6 +160,9 @@ fun ProductDetailDialog(
     product: Product,
     onDismiss: () -> Unit
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -171,9 +176,10 @@ fun ProductDetailDialog(
                 containerColor = MaterialTheme.colorScheme.surface
             )
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize()
-            ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                Column(
+                    modifier = Modifier.fillMaxSize()
+                ) {
                 // Header con botón de cerrar
                 Row(
                     modifier = Modifier
@@ -350,7 +356,13 @@ fun ProductDetailDialog(
                         // Botón de Añadir al Carrito
                         Button(
                             onClick = {
-                                // TODO: Añadir al carrito
+                                CartRepository.addToCart(product)
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "✓ Producto agregado al carrito",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
                             },
                             modifier = Modifier.weight(1f)
                         ) {
@@ -358,6 +370,13 @@ fun ProductDetailDialog(
                         }
                     }
                 }
+                }
+
+                // SnackbarHost para mostrar mensajes
+                SnackbarHost(
+                    hostState = snackbarHostState,
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                )
             }
         }
     }

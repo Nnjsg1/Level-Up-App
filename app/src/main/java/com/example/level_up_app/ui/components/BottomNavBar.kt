@@ -1,8 +1,8 @@
 package com.example.level_up_app.ui.components
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.BookmarkBorder
-import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Icon
@@ -35,7 +35,7 @@ fun BottomNavBar(
             onClick = { onItemSelected(1) },
             icon = {
                 Icon(
-                    imageVector = Icons.Outlined.Explore,
+                    imageVector = Icons.Outlined.Apps,
                     contentDescription = "Catalogo"
                 )
              },

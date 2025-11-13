@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import com.example.level_up_app.ui.catalog.CatalogScreen
 import com.example.level_up_app.ui.cart.CartScreen
 import com.example.level_up_app.ui.components.BottomNavBar
+import com.example.level_up_app.ui.news.NewsScreen
 import com.example.level_up_app.ui.profile.ProfileEditScreen
 import com.example.level_up_app.ui.profile.ProfileScreen
 import com.example.level_up_app.ui.main.HomeScreen
@@ -84,6 +85,7 @@ fun MainMenu(
             when (selectedIndex) {
                 0 -> HomeScreen()
                 1 -> CatalogScreen()
+                2 -> NewsScreen()
                 4 -> FavoritesScreen()
                 5 -> CartScreen()
                 3 -> {

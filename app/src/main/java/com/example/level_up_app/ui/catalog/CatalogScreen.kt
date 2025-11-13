@@ -8,6 +8,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +24,7 @@ import coil.compose.AsyncImage
 import com.example.level_up_app.data.Product
 import com.example.level_up_app.data.ProductRepository
 import com.example.level_up_app.data.CartRepository
+import com.example.level_up_app.data.FavoritesRepository
 import kotlinx.coroutines.launch
 
 // Función para formatear precios en formato chileno
@@ -162,6 +165,7 @@ fun ProductDetailDialog(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    var isFavorite by remember { mutableStateOf(FavoritesRepository.isFavorite(product.id)) }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -343,14 +347,30 @@ fun ProductDetailDialog(
                         // Botón de Favoritos
                         Button(
                             onClick = {
-                                // TODO: Agregar a favoritos
+                                FavoritesRepository.toggleFavorite(product)
+                                isFavorite = FavoritesRepository.isFavorite(product.id)
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = if (isFavorite) "♥ Agregado a favoritos" else "Eliminado de favoritos",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
                             },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.secondary
+                                containerColor = if (isFavorite)
+                                    MaterialTheme.colorScheme.error
+                                else
+                                    MaterialTheme.colorScheme.secondary
                             )
                         ) {
-                            Text("Agregar a Favoritos")
+                            Icon(
+                                imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(if (isFavorite) "En Favoritos" else "Agregar a Favoritos")
                         }
 
                         // Botón de Añadir al Carrito

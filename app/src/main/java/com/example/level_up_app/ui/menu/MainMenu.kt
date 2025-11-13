@@ -25,7 +25,10 @@ import com.example.level_up_app.ui.catalog.CatalogScreen
 import com.example.level_up_app.ui.cart.CartScreen
 import com.example.level_up_app.ui.components.BottomNavBar
 import com.example.level_up_app.ui.news.NewsScreen
+import com.example.level_up_app.ui.profile.ProfileEditScreen
 import com.example.level_up_app.ui.profile.ProfileScreen
+import com.example.level_up_app.ui.main.HomeScreen
+import com.example.level_up_app.ui.favorites.FavoritesScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,6 +36,8 @@ fun MainMenu(
     onProfile: () -> Unit = {}
 ) {
     var selectedIndex by remember { mutableStateOf(0) }
+    // local state to toggle between viewing profile and editing it
+    var isEditing by remember { mutableStateOf(false) }
 
     val currentScreen = when (selectedIndex) {
         0 -> "Inicio"
@@ -65,7 +70,11 @@ fun MainMenu(
                 }
             )
         },
-         bottomBar = { BottomNavBar(selectedIndex = selectedIndex, onItemSelected = { selectedIndex = it }, onProfile = onProfile) }
+         // when user selects another tab, make sure we leave edit mode
+         bottomBar = { BottomNavBar(selectedIndex = selectedIndex, onItemSelected = {
+             selectedIndex = it
+             if (it != 3) isEditing = false
+         }, onProfile = onProfile) }
 
     ) { innerPadding ->
         Box(
@@ -74,10 +83,18 @@ fun MainMenu(
                 .padding(innerPadding)
         ) {
             when (selectedIndex) {
+                0 -> HomeScreen()
                 1 -> CatalogScreen()
                 2 -> NewsScreen()
-                3 -> ProfileScreen()
+                4 -> FavoritesScreen()
                 5 -> CartScreen()
+                3 -> {
+                    if (isEditing) {
+                        ProfileEditScreen(onSave = { _, _, _ -> /* no-op for now */ }, onBack = { isEditing = false })
+                    } else {
+                        ProfileScreen(onEditClicked = { isEditing = true })
+                    }
+                }
                 else -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),

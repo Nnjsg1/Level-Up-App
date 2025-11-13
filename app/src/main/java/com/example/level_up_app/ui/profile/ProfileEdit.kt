@@ -2,10 +2,11 @@ package com.example.level_up_app.ui.profile
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
@@ -13,16 +14,24 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.Box
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 
 @Composable
-fun ProfileScreen(
+fun ProfileEditScreen(
     modifier: Modifier = Modifier,
-    name: String = "",
-    email: String = "",
-    password: String = "",
-    onEditClicked: () -> Unit = {}
+    initialName: String = "",
+    initialEmail: String = "",
+    initialPassword: String = "",
+    onSave: (name: String, email: String, password: String) -> Unit = { _, _, _ -> },
+    onBack: () -> Unit = {}
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    var name by remember { mutableStateOf(initialName) }
+    var email by remember { mutableStateOf(initialEmail) }
+    var password by remember { mutableStateOf(initialPassword) }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -48,41 +57,62 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        SnackbarHost(hostState = snackbarHostState)
+
         Text(text = "NOMBRE")
-        Text(
-            text = name,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-
-        Text(text = "EMAIL", modifier = Modifier.padding(top = 12.dp))
-        Text(
-            text = email,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-
-        Text(text = "CONTRASEÑA", modifier = Modifier.padding(top = 12.dp))
-        Text(
-            text = if (password.isEmpty()) "" else "••••••••",
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 8.dp)
         )
 
-        Button(
-            onClick = onEditClicked,
+        Text(text = "EMAIL", modifier = Modifier.padding(top = 12.dp))
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 24.dp)
+                .padding(top = 8.dp)
+        )
+
+        Text(text = "CONTRASEÑA", modifier = Modifier.padding(top = 12.dp))
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 24.dp),
+
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(text = "Editar")
+            Button(
+                onClick = {
+                    scope.launch {
+                        snackbarHostState.showSnackbar("Guardado")
+                        onSave(name, email, password)
+                        onBack()
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(text = "Guardar Cambios")
+            }
+
+            OutlinedButton(
+                onClick = { onBack() },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(text = "Descartar Cambios")
+            }
         }
     }
 }

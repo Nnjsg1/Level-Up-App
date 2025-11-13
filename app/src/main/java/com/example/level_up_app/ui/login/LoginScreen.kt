@@ -4,56 +4,49 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import com.example.level_up_app.screen.Fondo
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    viewModel: LoginViewModel,
+    viewModel: LoginViewModel = remember { LoginViewModel() },
     onNavigateToCreateAccount: () -> Unit = {},
     onNavigateToRememberPass: () -> Unit = {},
     onNavigateToMain: () -> Unit = {}
-) {
-    val uiState by viewModel.uiState.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
+){
+    val uiState by viewModel.FormData.collectAsState()
 
-    LaunchedEffect(viewModel) {
-        viewModel.events.collect { message ->
-            scope.launch { snackbarHostState.showSnackbar(message) }
+    // Navegar al Main cuando el login sea exitoso
+    LaunchedEffect(uiState.isLogin) {
+        if (uiState.isLogin) {
+            onNavigateToMain()
         }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Fondo()
-        Scaffold(
-            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-            containerColor = Color.Transparent
-        ) { innerPadding ->
+        Scaffold(containerColor = Color.Transparent) { innerPadding ->
             Column(
                 modifier = Modifier
                     .padding(innerPadding)
@@ -62,72 +55,69 @@ fun LoginScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Entrar a tu cuenta", style = MaterialTheme.typography.headlineMedium)
-                Text("Inicia sesión para continuar", modifier = Modifier.padding(top = 8.dp))
+                Text("Inicio de sesión", style = MaterialTheme.typography.headlineMedium)
+
+
 
                 OutlinedTextField(
-                    value = uiState.nombre,
-                    onValueChange = viewModel::onNombreChange,
-                    label = { Text("Nombre") },
-                    isError = uiState.nombreError != null,
+                    value = uiState.email,
+                    onValueChange = { viewModel.actualizarEmail(it)},
+                    label = { Text("Email") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 20.dp)
                 )
-                uiState.nombreError?.let { error ->
-                    Text(
-                        error,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
 
                 OutlinedTextField(
                     value = uiState.password,
-                    onValueChange = viewModel::onPasswordChange,
-                    label = { Text("Contraseña") },
+                    onValueChange = { viewModel.actualizarPassword(it) },
+                    label = { Text("Contraseña")},
                     visualTransformation = PasswordVisualTransformation(),
-                    isError = uiState.passwordError != null,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 12.dp)
                 )
-                uiState.passwordError?.let { error ->
-                    Text(
-                        error,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
 
-                TextButton(
-                    onClick = { onNavigateToRememberPass() },
-                    modifier = Modifier
-                        .align(Alignment.Start)
-                        .padding(top = 8.dp)
-                ) {
-                    Text("¿Olvidaste tu contraseña? Recuperar contraseña")
-
-                }
-
-                // Navigation to create account
                 Text(
-                    text = "¿No tienes cuenta? Crear cuenta",
+                    "¿Olvidaste la contraseña?",
                     modifier = Modifier
-                        .align(Alignment.Start)
                         .padding(top = 8.dp)
+                        .align(Alignment.End)
+                        .clickable { onNavigateToRememberPass() },
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodySmall
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                uiState.error?.let {
+                    if (it.isNotEmpty()) {
+                        Text(
+                            text = it,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                    }
+                }
+                Text(
+                    "¿No tenés cuenta? Registrate acá.",
+                    modifier = Modifier
+                        .padding(top = 6.dp)
+                        .align(Alignment.Start)
                         .clickable { onNavigateToCreateAccount() },
                     color = MaterialTheme.colorScheme.primary
                 )
 
                 Button(
-                    onClick = { onNavigateToMain() }, modifier = Modifier
+                    onClick = { viewModel.Login() },
+                    modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 16.dp)
+                        .padding(top = 8.dp)
                 ) {
-                    Text("Ingresar")
+                    Text("Inicio Sesion")
                 }
             }
         }
     }
 }
+

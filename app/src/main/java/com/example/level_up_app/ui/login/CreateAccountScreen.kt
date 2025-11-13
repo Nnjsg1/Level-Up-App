@@ -1,38 +1,81 @@
 package com.example.level_up_app.ui.login
 
+import android.app.DatePickerDialog
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.level_up_app.screen.Fondo
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateAccountScreen(
+    viewModel: CreateAccountViewModel = remember { CreateAccountViewModel() },
     onCreate: (name: String, email: String, password: String, dob: String) -> Unit = { _, _, _, _ -> },
     onBackToLogin: () -> Unit = {}
 ) {
-    val name = remember { mutableStateOf("") }
-    val email = remember { mutableStateOf("") }
-    val password = remember { mutableStateOf("") }
-    val dob = remember { mutableStateOf("") } // placeholder string for date
+    val uiState by viewModel.FormData.collectAsState()
+    val context = LocalContext.current
+
+    // Navegar al Login cuando la cuenta sea creada exitosamente
+    LaunchedEffect(uiState.isAccountCreated) {
+        if (uiState.isAccountCreated) {
+            onCreate(uiState.name, uiState.email, uiState.password, uiState.dob)
+        }
+    }
+
+    // Configurar el DatePickerDialog
+    val calendar = Calendar.getInstance()
+    val year = calendar.get(Calendar.YEAR)
+    val month = calendar.get(Calendar.MONTH)
+    val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+    val datePickerDialog = remember {
+        DatePickerDialog(
+            context,
+            { _, selectedYear, selectedMonth, selectedDay ->
+                // Formato dd/MM/yyyy
+                val fechaSeleccionada = String.format(
+                    "%02d/%02d/%04d",
+                    selectedDay,
+                    selectedMonth + 1, // Los meses en Calendar van de 0-11
+                    selectedYear
+                )
+                viewModel.actualizarDob(fechaSeleccionada)
+            },
+            year,
+            month,
+            day
+        )
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Fondo()
@@ -55,8 +98,8 @@ fun CreateAccountScreen(
                 )
 
                 OutlinedTextField(
-                    value = name.value,
-                    onValueChange = { name.value = it },
+                    value = uiState.name,
+                    onValueChange = { viewModel.actualizarName(it) },
                     label = { Text("Nombre") },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -64,8 +107,8 @@ fun CreateAccountScreen(
                 )
 
                 OutlinedTextField(
-                    value = email.value,
-                    onValueChange = { email.value = it },
+                    value = uiState.email,
+                    onValueChange = { viewModel.actualizarEmail(it) },
                     label = { Text("Email") },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -73,8 +116,8 @@ fun CreateAccountScreen(
                 )
 
                 OutlinedTextField(
-                    value = password.value,
-                    onValueChange = { password.value = it },
+                    value = uiState.password,
+                    onValueChange = { viewModel.actualizarPassword(it) },
                     label = { Text("Contraseña") },
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier
@@ -82,23 +125,49 @@ fun CreateAccountScreen(
                         .padding(top = 12.dp)
                 )
 
-                // Simple DOB placeholder
+                // DatePicker para fecha de nacimiento
+                val interactionSource = remember { MutableInteractionSource() }
+
+                LaunchedEffect(interactionSource) {
+                    interactionSource.interactions.collect { interaction ->
+                        if (interaction is PressInteraction.Release) {
+                            datePickerDialog.show()
+                        }
+                    }
+                }
+
                 OutlinedTextField(
-                    value = dob.value.ifEmpty { "Seleccionar" },
-                    onValueChange = { /* no direct edit - replace with date picker logic if desired */ },
-                    label = { Text("Fecha de nacimiento") },
+                    value = uiState.dob.ifEmpty { "" },
+                    onValueChange = { },
+                    label = { Text("Fecha de nacimiento (dd/mm/aaaa)") },
                     readOnly = true,
+                    placeholder = { Text("Seleccionar fecha") },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = "Seleccionar fecha"
+                        )
+                    },
+                    interactionSource = interactionSource,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 12.dp)
-                        .clickable {
-                            // placeholder: open date picker or set a fixed value for now
-                            dob.value = "01/01/2000"
-                        }
                 )
 
+                Spacer(modifier = Modifier.height(8.dp))
+
+                uiState.error?.let {
+                    if (it.isNotEmpty()) {
+                        Text(
+                            text = it,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                    }
+                }
+
                 Button(
-                    onClick = { onCreate(name.value, email.value, password.value, dob.value) },
+                    onClick = { viewModel.CreateAccount() },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 16.dp)

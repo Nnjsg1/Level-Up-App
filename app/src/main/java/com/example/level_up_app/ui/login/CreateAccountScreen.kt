@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.materialIcon
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -88,9 +89,12 @@ fun CreateAccountScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Crea una cuenta nueva", style = MaterialTheme.typography.headlineMedium)
+                Text("Crea una cuenta nueva",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = Color.White)
+
                 Text(
-                    "¿Ya estás registrado? Iniciá sesión acá.",
+                    "¿Ya estás registrado? Inicia sesión acá.",
                     modifier = Modifier
                         .padding(top = 8.dp)
                         .clickable { onBackToLogin() },

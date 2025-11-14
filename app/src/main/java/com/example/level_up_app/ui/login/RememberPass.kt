@@ -51,11 +51,13 @@ fun RememberPassScreen(
             ) {
                 Text(
                     text = "¿Olvidaste la contraseña?",
-                    style = MaterialTheme.typography.headlineMedium
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = Color.White
                 )
                 Text(
                     text = "Puedes crear una nueva.",
-                    modifier = Modifier.padding(top = 8.dp)
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = Color.White
                 )
 
                 OutlinedTextField(

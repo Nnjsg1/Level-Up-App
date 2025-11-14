@@ -16,15 +16,15 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.LaunchedEffect
 import com.example.level_up_app.screen.Fondo
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,9 +55,19 @@ fun LoginScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Inicio de sesión", style = MaterialTheme.typography.headlineMedium)
+                Text(
+                    "Inicio de sesión",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = Color.White
+                )
 
-
+                Text(
+                    "¿No tenés cuenta? Registrate acá.",
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .clickable { onNavigateToCreateAccount() },
+                    color = MaterialTheme.colorScheme.primary
+                )
 
                 OutlinedTextField(
                     value = uiState.email,
@@ -99,14 +109,6 @@ fun LoginScreen(
                         )
                     }
                 }
-                Text(
-                    "¿No tenés cuenta? Registrate acá.",
-                    modifier = Modifier
-                        .padding(top = 6.dp)
-                        .align(Alignment.Start)
-                        .clickable { onNavigateToCreateAccount() },
-                    color = MaterialTheme.colorScheme.primary
-                )
 
                 Button(
                     onClick = { viewModel.Login() },

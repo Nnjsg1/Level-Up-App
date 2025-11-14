@@ -29,9 +29,9 @@ import androidx.activity.ComponentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 
-// PayScreen: muestra la UI de pago y escucha un tag NFC.
-// - onCancel: callback que se ejecuta cuando el usuario pulsa "Cancelar Pago" (debe devolver al menú principal).
-// - onSuccess: callback que se ejecuta cuando se detecta cualquier tag NFC (sin validación) y debe llevar a la pantalla de pago exitoso.
+// PayScreen: muestra la UI de pago y recibe un NFC.
+// - onCancel: Si el usuario apreta Cancelar compra se volvera a la ventana de inicio.
+// - onSuccess: callback que se ejecuta cuando se detecta cualquier tag NFC (No se valida el tipo de tarjeta usada) y debe llevar a la pantalla de pago exitoso.
 @Composable
 fun PayScreen(
     onCancel: () -> Unit = {},

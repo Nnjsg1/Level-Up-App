@@ -1,5 +1,6 @@
 package com.example.level_up_app.ui.login
 
+import android.util.Patterns
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +33,7 @@ fun RememberPassScreen(
     onBack: () -> Unit = {}
 ) {
     val email = remember { mutableStateOf("") }
+    val errorMessage = remember { mutableStateOf("") }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -56,23 +58,43 @@ fun RememberPassScreen(
                 )
                 Text(
                     text = "Puedes crear una nueva.",
-                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.padding(top = 8.dp),
                     color = Color.White
                 )
 
                 OutlinedTextField(
                     value = email.value,
-                    onValueChange = { email.value = it },
+                    onValueChange = {
+                        email.value = it
+                        errorMessage.value = ""
+                    },
                     label = { Text("EMAIL") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 20.dp)
                 )
 
+                if (errorMessage.value.isNotEmpty()) {
+                    Text(
+                        text = errorMessage.value,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+
                 Button(
                     onClick = {
-                        // show a simple snackbar message "Correo enviado"
-                        scope.launch { snackbarHostState.showSnackbar("Correo enviado") }
+                        // Validar email
+                        if (email.value.isEmpty()) {
+                            errorMessage.value = "Por favor ingresa tu email"
+                        } else if (email.value.length < 6) {
+                            errorMessage.value = "El email es invalido"
+                        } else if (!Patterns.EMAIL_ADDRESS.matcher(email.value).matches()) {
+                            errorMessage.value = "No tiene formato de email"
+                        } else {
+                            errorMessage.value = ""
+                            scope.launch { snackbarHostState.showSnackbar("Correo enviado") }
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()

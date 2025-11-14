@@ -29,6 +29,7 @@ import com.example.level_up_app.ui.profile.ProfileEditScreen
 import com.example.level_up_app.ui.profile.ProfileScreen
 import com.example.level_up_app.ui.main.HomeScreen
 import com.example.level_up_app.ui.favorites.FavoritesScreen
+import com.example.level_up_app.buys.PayScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,6 +47,7 @@ fun MainMenu(
         3 -> "Perfil"
         4 -> "Favoritos"
         5 -> "Carrito"
+        6 -> "Pago"
         else -> ""
     }
 
@@ -87,7 +89,8 @@ fun MainMenu(
                 1 -> CatalogScreen()
                 2 -> NewsScreen()
                 4 -> FavoritesScreen()
-                5 -> CartScreen()
+                5 -> CartScreen(onNavigateToPay = { selectedIndex = 6 })
+                6 -> PayScreen()
                 3 -> {
                     if (isEditing) {
                         ProfileEditScreen(onSave = { _, _, _ -> /* no-op for now */ }, onBack = { isEditing = false })

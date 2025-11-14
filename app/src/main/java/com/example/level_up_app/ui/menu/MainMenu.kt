@@ -30,7 +30,7 @@ import com.example.level_up_app.ui.profile.ProfileScreen
 import com.example.level_up_app.ui.main.HomeScreen
 import com.example.level_up_app.ui.favorites.FavoritesScreen
 import com.example.level_up_app.buys.PayScreen
-import com.example.level_up_app.buys.PaySuccessfuln
+import com.example.level_up_app.buys.PayResultScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,8 +38,9 @@ fun MainMenu(
     onProfile: () -> Unit = {}
 ) {
     var selectedIndex by remember { mutableStateOf(0) }
-    // local state to toggle between viewing profile and editing it
     var isEditing by remember { mutableStateOf(false) }
+    // nuevo estado: resultado del último pago (null = aún no se ha hecho)
+    var lastPaymentSuccess by remember { mutableStateOf<Boolean?>(null) }
 
     val currentScreen = when (selectedIndex) {
         0 -> "Inicio"
@@ -49,7 +50,7 @@ fun MainMenu(
         4 -> "Favoritos"
         5 -> "Carrito"
         6 -> "Pago"
-        7 -> "Pago exitoso"
+        7 -> "Resultado pago"
         else -> ""
     }
 
@@ -92,8 +93,29 @@ fun MainMenu(
                 2 -> NewsScreen()
                 4 -> FavoritesScreen()
                 5 -> CartScreen(onNavigateToPay = { selectedIndex = 6 })
-                6 -> PayScreen(onCancel = { selectedIndex = 0 }, onSuccess = { selectedIndex = 7 })
-                7 -> PaySuccessfuln()
+                6 -> PayScreen(
+                    onCancel = { selectedIndex = 0 },
+                    onSuccess = {
+                        lastPaymentSuccess = true
+                        selectedIndex = 7
+                    },
+                    onFailure = {
+                        lastPaymentSuccess = false
+                        selectedIndex = 7
+                    }
+                )
+                7 -> PayResultScreen(
+                    isSuccess = (lastPaymentSuccess == true),
+                    onRetry = {
+                        // al reintentar limpiamos el estado y volvemos a la pantalla de pago
+                        lastPaymentSuccess = null
+                        selectedIndex = 6
+                    },
+                    onGoHome = {
+                        lastPaymentSuccess = null
+                        selectedIndex = 0
+                    }
+                )
                 3 -> {
                     if (isEditing) {
                         ProfileEditScreen(onSave = { _, _, _ -> /* no-op for now */ }, onBack = { isEditing = false })

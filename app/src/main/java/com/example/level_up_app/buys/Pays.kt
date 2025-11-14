@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
@@ -28,6 +30,8 @@ import androidx.compose.ui.unit.dp
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.runtime.LaunchedEffect
+import kotlin.random.Random
 
 // PayScreen: muestra la UI de pago y escucha un tag NFC.
 // - onCancel: callback que se ejecuta cuando el usuario pulsa "Cancelar Pago" (debe devolver al menú principal).
@@ -35,7 +39,8 @@ import androidx.lifecycle.LifecycleEventObserver
 @Composable
 fun PayScreen(
     onCancel: () -> Unit = {},
-    onSuccess: () -> Unit = {}
+    onSuccess: () -> Unit = {},
+    onFailure: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val activity = context as? Activity
@@ -45,6 +50,9 @@ fun PayScreen(
     // Estado para el último tag detectado (hex)
     var lastTagId by remember { mutableStateOf("") }
 
+    // nuevo estado: ¿estamos procesando el pago?
+    var isProcessing by remember { mutableStateOf(false) }
+
     // Obtener el adaptador NFC del dispositivo (puede ser null si no tiene NFC)
     val nfcAdapter = NfcAdapter.getDefaultAdapter(context)
 
@@ -52,6 +60,12 @@ fun PayScreen(
     fun bytesToHex(bytes: ByteArray?): String {
         if (bytes == null) return ""
         return bytes.joinToString(":") { String.format("%02X", it) }
+    }
+
+    // función helper que inicia el procesamiento simulado del pago
+    fun startPaymentProcessing() {
+        if (isProcessing) return
+        isProcessing = true
     }
 
     // Registramos un ReaderCallback; el enable/disable se hace en onResume/onPause del lifecycle
@@ -68,8 +82,8 @@ fun PayScreen(
                     if (lastTagId.isEmpty()) {
                         lastTagId = idHex
                         Log.d("PayScreen", "Handling first tag: $idHex")
-                        // Llamar al callback de éxito (no se realizan validaciones)
-                        onSuccess()
+                        // en lugar de llamar directamente a onSuccess, iniciamos el procesamiento
+                        startPaymentProcessing()
                     } else {
                         Log.d("PayScreen", "Tag discovered but already handled: $idHex")
                     }
@@ -164,47 +178,72 @@ fun PayScreen(
             // reset flag para futuras entradas si regresas a la pantalla
             readerActivated = false
             lastTagId = ""
+            isProcessing = false
          }
      }
 
+    // cuando isProcessing cambia a true, lanzamos un efecto que simula el procesamiento
+    if (isProcessing) {
+        LaunchedEffect(Unit) {
+            // pequeño delay para simular tiempo de procesamiento
+            kotlinx.coroutines.delay(2000)
+            val result = Random.nextInt(1, 4) // 1,2,3
+            if (result == 1 || result == 2) {
+                onSuccess()
+            } else {
+                onFailure()
+            }
+            isProcessing = false
+        }
+    }
+
     // Interfaz simple: mensaje centrado y botón "Cancelar Pago" debajo
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "Acerque su Tarjeta", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-
-            // Mensajes de diagnóstico para ayudar a identificar por qué no lee
-            if (nfcAdapter == null) {
-                Text(text = "NFC no disponible en este dispositivo", modifier = Modifier.padding(top = 12.dp))
-            } else if (!nfcAdapter.isEnabled) {
-                Text(text = "NFC desactivado: actívalo en Ajustes", modifier = Modifier.padding(top = 12.dp))
-            } else if (!readerActivated) {
-                Text(text = "No se pudo activar modo lector (intenta reiniciar la app)", modifier = Modifier.padding(top = 12.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (isProcessing) {
+                Text(text = "Procesando pago...", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.padding(top = 16.dp))
+                CircularProgressIndicator()
             } else {
-                Text(text = "Lector NFC activo: acerque un tag", modifier = Modifier.padding(top = 12.dp))
-            }
+                Text(text = "Acerque su Tarjeta", fontSize = 24.sp, fontWeight = FontWeight.Bold)
 
-            // Mostrar último tag detectado
-            if (lastTagId.isNotEmpty()) {
-                Text(text = "Último tag: $lastTagId", modifier = Modifier.padding(top = 8.dp))
-            }
+                // Mensajes de diagnóstico para ayudar a identificar por qué no lee
+                if (nfcAdapter == null) {
+                    Text(text = "NFC no disponible en este dispositivo", modifier = Modifier.padding(top = 12.dp))
+                } else if (!nfcAdapter.isEnabled) {
+                    Text(text = "NFC desactivado: actívalo en Ajustes", modifier = Modifier.padding(top = 12.dp))
+                } else if (!readerActivated) {
+                    Text(text = "No se pudo activar modo lector (intenta reiniciar la app)", modifier = Modifier.padding(top = 12.dp))
+                } else {
+                    Text(text = "Lector NFC activo: acerque un tag", modifier = Modifier.padding(top = 12.dp))
+                }
 
-            // Espacio
-            androidx.compose.foundation.layout.Spacer(modifier = Modifier.padding(16.dp))
+                // Mostrar último tag detectado
+                if (lastTagId.isNotEmpty()) {
+                    Text(text = "Último tag: $lastTagId", modifier = Modifier.padding(top = 8.dp))
+                }
 
-            // Botón cancelar
-            Button(
-                onClick = { onCancel() },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = "Cancelar Pago")
-            }
+                // Espacio
+                Spacer(modifier = Modifier.padding(16.dp))
 
-            // Botón para simular lectura (útil en emulador o si el modo lector no funciona)
-            androidx.compose.foundation.layout.Spacer(modifier = Modifier.padding(8.dp))
-            Button(onClick = { onSuccess() }, modifier = Modifier.fillMaxWidth()) {
-                Text(text = "Pagar con Efectivo")
+                // Botón cancelar
+                Button(
+                    onClick = { onCancel() },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(text = "Cancelar Pago")
+                }
+
+                // Botón para simular lectura (útil en emulador o si el modo lector no funciona)
+                Spacer(modifier = Modifier.padding(8.dp))
+                Button(onClick = { startPaymentProcessing() }, modifier = Modifier.fillMaxWidth()) {
+                    Text(text = "Pagar con Efectivo")
+                }
             }
         }
     }
@@ -214,5 +253,5 @@ fun PayScreen(
 @Composable
 fun PayScreenPreview() {
     // preview con callbacks vacíos
-    PayScreen(onCancel = {}, onSuccess = {})
+    PayScreen(onCancel = {}, onSuccess = {}, onFailure = {})
 }

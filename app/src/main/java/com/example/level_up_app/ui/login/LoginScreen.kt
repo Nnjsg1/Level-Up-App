@@ -62,7 +62,7 @@ fun LoginScreen(
                 )
 
                 Text(
-                    "¿No tenés cuenta? Registrate acá.",
+                    "¿No tienes cuenta? Registrate acá.",
                     modifier = Modifier
                         .padding(top = 8.dp)
                         .clickable { onNavigateToCreateAccount() },

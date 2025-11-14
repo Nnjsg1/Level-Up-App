@@ -23,7 +23,9 @@ import com.example.level_up_app.data.CartRepository
 import com.example.level_up_app.ui.catalog.formatPrice
 
 @Composable
-fun CartScreen() {
+fun CartScreen(
+    onNavigateToPay: () -> Unit = {}
+) {
     val cartItems = CartRepository.cartItems
 
     Column(
@@ -74,7 +76,7 @@ fun CartScreen() {
             CartSummary(
                 total = CartRepository.getTotal(),
                 onCheckout = {
-                    // TODO: Implementar proceso de compra
+                    onNavigateToPay()
                 }
             )
         }
@@ -121,7 +123,7 @@ fun CartItemCard(
                     maxLines = 2
                 )
                 Text(
-                    text = "$${formatPrice(cartItem.product.price)}",
+                    text = "$$${formatPrice(cartItem.product.price)}",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(top = 4.dp)
@@ -225,7 +227,7 @@ fun CartSummary(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "$${formatPrice(total)}",
+                    text = "$$${formatPrice(total)}",
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold
@@ -247,4 +249,3 @@ fun CartSummary(
         }
     }
 }
-

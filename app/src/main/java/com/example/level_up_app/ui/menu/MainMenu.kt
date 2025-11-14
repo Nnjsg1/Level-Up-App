@@ -29,6 +29,8 @@ import com.example.level_up_app.ui.profile.ProfileEditScreen
 import com.example.level_up_app.ui.profile.ProfileScreen
 import com.example.level_up_app.ui.main.HomeScreen
 import com.example.level_up_app.ui.favorites.FavoritesScreen
+import com.example.level_up_app.buys.PayScreen
+import com.example.level_up_app.buys.PaySuccessfuln
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,6 +48,8 @@ fun MainMenu(
         3 -> "Perfil"
         4 -> "Favoritos"
         5 -> "Carrito"
+        6 -> "Pago"
+        7 -> "Pago exitoso"
         else -> ""
     }
 
@@ -71,9 +75,9 @@ fun MainMenu(
             )
         },
          // when user selects another tab, make sure we leave edit mode
-         bottomBar = { BottomNavBar(selectedIndex = selectedIndex, onItemSelected = {
-             selectedIndex = it
-             if (it != 3) isEditing = false
+         bottomBar = { BottomNavBar(selectedIndex = selectedIndex, onItemSelected = { index ->
+             selectedIndex = index
+             if (index != 3) isEditing = false
          }, onProfile = onProfile) }
 
     ) { innerPadding ->
@@ -87,7 +91,9 @@ fun MainMenu(
                 1 -> CatalogScreen()
                 2 -> NewsScreen()
                 4 -> FavoritesScreen()
-                5 -> CartScreen()
+                5 -> CartScreen(onNavigateToPay = { selectedIndex = 6 })
+                6 -> PayScreen(onCancel = { selectedIndex = 0 }, onSuccess = { selectedIndex = 7 })
+                7 -> PaySuccessfuln()
                 3 -> {
                     if (isEditing) {
                         ProfileEditScreen(onSave = { _, _, _ -> /* no-op for now */ }, onBack = { isEditing = false })

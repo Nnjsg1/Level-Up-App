@@ -50,9 +50,11 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+
+    // Iconos extendidos de Material Design
     implementation("androidx.compose.material:material-icons-extended")
 
-    // ViewModel para Compose
+
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
 
     // Coil para cargar imágenes

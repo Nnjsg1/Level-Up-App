@@ -123,7 +123,7 @@ fun CartItemCard(
                     maxLines = 2
                 )
                 Text(
-                    text = "$$${formatPrice(cartItem.product.price)}",
+                    text = "$${formatPrice(cartItem.product.price)}",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(top = 4.dp)
@@ -227,7 +227,7 @@ fun CartSummary(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "$$${formatPrice(total)}",
+                    text = "$${formatPrice(total)}",
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold

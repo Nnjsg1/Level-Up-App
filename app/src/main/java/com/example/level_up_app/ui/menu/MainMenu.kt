@@ -31,6 +31,7 @@ import com.example.level_up_app.ui.main.HomeScreen
 import com.example.level_up_app.ui.favorites.FavoritesScreen
 import com.example.level_up_app.buys.PayScreen
 import com.example.level_up_app.buys.PayResultScreen
+import com.example.level_up_app.screen.Fondo_2
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,8 +42,9 @@ fun MainMenu(
     var isEditing by remember { mutableStateOf(false) }
     // nuevo estado: resultado del último pago (null = aún no se ha hecho)
     var lastPaymentSuccess by remember { mutableStateOf<Boolean?>(null) }
+    val currentScreen =
 
-    val currentScreen = when (selectedIndex) {
+        when (selectedIndex) {
         0 -> "Inicio"
         1 -> "Catalogo"
         2 -> "Noticias"
@@ -87,6 +89,7 @@ fun MainMenu(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
+            Fondo_2()
             when (selectedIndex) {
                 0 -> HomeScreen()
                 1 -> CatalogScreen()

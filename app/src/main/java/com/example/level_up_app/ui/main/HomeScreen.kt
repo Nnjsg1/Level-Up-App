@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.level_up_app.data.Product
 import com.example.level_up_app.data.ProductRepository
+import com.example.level_up_app.screen.Fondo
+import com.example.level_up_app.screen.Fondo_2
 import com.example.level_up_app.ui.catalog.ProductDetailDialog
 import com.example.level_up_app.ui.catalog.formatPrice
 

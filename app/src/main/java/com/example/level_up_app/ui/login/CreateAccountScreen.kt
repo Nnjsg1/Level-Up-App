@@ -98,7 +98,8 @@ fun CreateAccountScreen(
                     modifier = Modifier
                         .padding(top = 8.dp)
                         .clickable { onBackToLogin() },
-                    color = MaterialTheme.colorScheme.primary
+                    color = Color.Cyan,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                 )
 
                 OutlinedTextField(

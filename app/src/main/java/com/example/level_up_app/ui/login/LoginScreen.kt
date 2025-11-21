@@ -148,6 +148,15 @@ fun LoginScreen(
                 ) {
                     Text("Inicio Sesion")
                 }
+                Button(
+                    colors= ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = Color.Black,
+                        Color.Transparent
+                    ),
+                    onClick = {onNavigateToMain()}
+                ){
+                }
             }
         }
     }

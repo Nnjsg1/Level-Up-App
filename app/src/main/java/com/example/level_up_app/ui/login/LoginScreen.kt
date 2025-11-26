@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import com.example.level_up_app.R
 import com.example.level_up_app.screen.Fondo
 import com.example.level_up_app.screen.Fondo_2
+import androidx.compose.material3.ButtonDefaults
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

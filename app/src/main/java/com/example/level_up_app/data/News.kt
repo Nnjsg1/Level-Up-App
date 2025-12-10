@@ -1,13 +1,19 @@
 package com.example.level_up_app.data
 
+import com.google.gson.annotations.SerializedName
+
 data class News(
-    val id: String = "",
+    val id: Long = 0,
     val title: String = "",
-    val summary: String = "",
     val content: String = "",
-    val imageUrl: String = "",
-    val videoPath: String = "", // Ruta local del video
-    val date: String = "",
-    val category: String = ""
+    val summary: String = "",
+    val image: String = "",
+    val author: String = "Admin",
+    val category: String = "General",
+    val views: Int = 0,
+    @SerializedName("isPublished")
+    val isPublished: Boolean = true,
+    val createdAt: String = "",
+    val updatedAt: String = ""
 )
 

@@ -6,6 +6,7 @@ import com.example.level_up_app.data.Product
 import com.example.level_up_app.data.Category
 import com.example.level_up_app.data.Tag
 import com.example.level_up_app.data.User
+import com.example.level_up_app.data.News
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -60,5 +61,37 @@ interface ApiService {
 
     @GET("categories")
     suspend fun getCategories(): Response<List<Category>>
+
+    // ============ ENDPOINTS DE NOTICIAS ============
+
+    @GET("news")
+    suspend fun getAllNews(): Response<List<News>>
+
+    @GET("news/published")
+    suspend fun getPublishedNews(): Response<List<News>>
+
+    @GET("news/{id}")
+    suspend fun getNewsById(@Path("id") id: Long): Response<News>
+
+    @GET("news/category/{category}")
+    suspend fun getNewsByCategory(@Path("category") category: String): Response<List<News>>
+
+    @GET("news/category/{category}/published")
+    suspend fun getPublishedNewsByCategory(@Path("category") category: String): Response<List<News>>
+
+    @GET("news/search/{title}")
+    suspend fun searchNews(@Path("title") title: String): Response<List<News>>
+
+    @POST("news")
+    suspend fun createNews(@Body news: News): Response<News>
+
+    @PUT("news/{id}")
+    suspend fun updateNews(@Path("id") id: Long, @Body news: News): Response<News>
+
+    @DELETE("news/{id}")
+    suspend fun deleteNews(@Path("id") id: Long): Response<Unit>
+
+    @POST("news/{id}/view")
+    suspend fun incrementNewsViews(@Path("id") id: Long): Response<News>
 }
 

@@ -4,11 +4,11 @@ import android.util.Log
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.level_up_app.data.model.User
-import com.example.level_up_app.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import com.example.level_up_app.data.model.User
+import com.example.level_up_app.data.repository.UserRepository
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -16,10 +16,11 @@ import java.util.Locale
 
 class CreateAccountViewModel : ViewModel() {
     private val formuCreateAccount = MutableStateFlow(FormularioCreateAccount())
-    private val userRepository = UserRepository()
-    private val TAG = "CreateAccountViewModel"
 
     val FormData: StateFlow<FormularioCreateAccount> = formuCreateAccount.asStateFlow()
+
+    private val userRepository = UserRepository()
+    private val TAG = "CreateAccountViewModel"
 
     fun actualizarName(name: String){
         formuCreateAccount.value = formuCreateAccount.value.copy(
@@ -87,9 +88,9 @@ class CreateAccountViewModel : ViewModel() {
 
     fun CreateAccount(){
         viewModelScope.launch {
-            val f = formuCreateAccount.value
-
             Log.d(TAG, "Iniciando validación de cuenta...")
+
+            val f = formuCreateAccount.value
 
             // Validar nombre
             if(f.name.isEmpty()){
@@ -170,4 +171,3 @@ class CreateAccountViewModel : ViewModel() {
         }
     }
 }
-

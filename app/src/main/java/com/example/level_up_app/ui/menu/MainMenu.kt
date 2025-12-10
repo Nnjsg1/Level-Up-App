@@ -131,13 +131,21 @@ fun MainMenu(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { selectedIndex = 4 }) {
+                    IconButton(onClick = {
+                        selectedIndex = 4
+                        showUserAdmin = false
+                        showAdminProducts = false
+                    }) {
                         Icon(
                             imageVector = if (selectedIndex == 4) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                             contentDescription = "Favoritos"
                         )
                     }
-                    IconButton(onClick = { selectedIndex = 5 }) {
+                    IconButton(onClick = {
+                        selectedIndex = 5
+                        showUserAdmin = false
+                        showAdminProducts = false
+                    }) {
                         Icon(
                             imageVector = if (selectedIndex == 5) Icons.Filled.ShoppingCart else Icons.Outlined.ShoppingCart,
                             contentDescription = "Carrito"
@@ -156,6 +164,9 @@ fun MainMenu(
          bottomBar = { BottomNavBar(selectedIndex = selectedIndex, onItemSelected = { index ->
              selectedIndex = index
              if (index != 3) isEditing = false
+             // Resetear estados de pantallas de administración al cambiar de tab
+             showUserAdmin = false
+             showAdminProducts = false
          }, onProfile = onProfile) }
 
     ) { innerPadding ->

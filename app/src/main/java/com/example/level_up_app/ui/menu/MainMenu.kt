@@ -6,9 +6,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,6 +35,7 @@ import com.example.level_up_app.ui.favorites.FavoritesScreen
 import com.example.level_up_app.buys.PayScreen
 import com.example.level_up_app.buys.PayResultScreen
 import com.example.level_up_app.screen.Fondo_2
+import com.example.level_up_app.data.UserSession
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,6 +46,9 @@ fun MainMenu(
     var isEditing by remember { mutableStateOf(false) }
     // nuevo estado: resultado del último pago (null = aún no se ha hecho)
     var lastPaymentSuccess by remember { mutableStateOf<Boolean?>(null) }
+    // Estado para controlar el menú desplegable de administrador
+    var showAdminMenu by remember { mutableStateOf(false) }
+
     val currentScreen =
 
         when (selectedIndex) {
@@ -61,6 +68,52 @@ fun MainMenu(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(currentScreen.uppercase()) },
+                navigationIcon = {
+                    // Mostrar menú de administrador solo si el usuario es admin
+                    if (UserSession.isAdmin) {
+                        Box {
+                            IconButton(onClick = { showAdminMenu = true }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Menu,
+                                    contentDescription = "Menú Administrador"
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = showAdminMenu,
+                                onDismissRequest = { showAdminMenu = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("Agregar Producto") },
+                                    onClick = {
+                                        showAdminMenu = false
+                                        // TODO: Navegar a agregar producto
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Administrar Usuarios") },
+                                    onClick = {
+                                        showAdminMenu = false
+                                        // TODO: Navegar a administrar usuarios
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Administrar Productos") },
+                                    onClick = {
+                                        showAdminMenu = false
+                                        // TODO: Navegar a administrar productos
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Administrar Noticias") },
+                                    onClick = {
+                                        showAdminMenu = false
+                                        // TODO: Navegar a administrar noticias
+                                    }
+                                )
+                            }
+                        }
+                    }
+                },
                 actions = {
                     IconButton(onClick = { selectedIndex = 4 }) {
                         Icon(

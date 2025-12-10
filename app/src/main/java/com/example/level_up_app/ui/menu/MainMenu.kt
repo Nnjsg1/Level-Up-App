@@ -35,6 +35,8 @@ import com.example.level_up_app.ui.news.NewsScreen
 import com.example.level_up_app.ui.admin.AdminNewsScreen
 import com.example.level_up_app.ui.admin.NewsFormScreen
 import com.example.level_up_app.ui.admin.AdminNewsViewModel
+import com.example.level_up_app.ui.admin.AdminProductsScreen
+import com.example.level_up_app.ui.admin.AdminProductsViewModel
 import com.example.level_up_app.ui.profile.ProfileEditScreen
 import com.example.level_up_app.ui.profile.ProfileScreen
 import com.example.level_up_app.ui.main.HomeScreen
@@ -67,14 +69,13 @@ fun MainMenu(
     var showLogoutDialog by remember { mutableStateOf(false) }
     // Estado para controlar la navegación a administración de usuarios
     var showUserAdmin by remember { mutableStateOf(false) }
-
+    // Estado para controlar la navegación a admin de productos
+    var showAdminProducts by remember { mutableStateOf(false) }
+    // Estado para crear/editar noticias
     var newsToEdit by remember { mutableStateOf<com.example.level_up_app.data.News?>(null) }
     var showNewsForm by remember { mutableStateOf(false) }
 
-
-    val currentScreen =
-
-        when (selectedIndex) {
+    val currentScreen = when (selectedIndex) {
         0 -> "Inicio"
         1 -> "Catalogo"
         2 -> "Noticias"
@@ -109,7 +110,7 @@ fun MainMenu(
                                 text = { Text("Administrar Productos") },
                                 onClick = {
                                     showAdminMenu = false
-                                    // TODO: Navegar a administración de productos
+                                    showAdminProducts = true
                                 }
                             )
                             DropdownMenuItem(
@@ -123,7 +124,7 @@ fun MainMenu(
                                 text = { Text("Administrar Noticias") },
                                 onClick = {
                                     showAdminMenu = false
-                                    selectedIndex = 8 // Nuevo índice para AdminNews
+                                    selectedIndex = 8
                                 }
                             )
                         }
@@ -158,131 +159,140 @@ fun MainMenu(
          }, onProfile = onProfile) }
 
     ) { innerPadding ->
-        // Mostrar pantalla de administración de usuarios si está activa
-        if (showUserAdmin) {
-            Box(modifier = Modifier.padding(innerPadding)) {
-                UserAdminScreen(
-                    onNavigateBack = {
-                        showUserAdmin = false
-                        selectedIndex = 0 // Volver al inicio
-                    }
-                )
-            }
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-            ) {
-                Fondo_2()
-                when (selectedIndex) {
-                0 -> HomeScreen()
-                1 -> CatalogScreen()
-                2 -> NewsScreen()
-                4 -> FavoritesScreen()
-                5 -> CartScreen(onNavigateToPay = { selectedIndex = 6 })
-                6 -> PayScreen(
-                    onCancel = { selectedIndex = 0 },
-                    onSuccess = {
-                        lastPaymentSuccess = true
-                        selectedIndex = 7
-                    },
-                    onFailure = {
-                        lastPaymentSuccess = false
-                        selectedIndex = 7
-                    }
-                )
-                7 -> PayResultScreen(
-                    isSuccess = (lastPaymentSuccess == true),
-                    onRetry = {
-                        // al reintentar limpiamos el estado y volvemos a la pantalla de pago
-                        lastPaymentSuccess = null
-                        selectedIndex = 6
-                    },
-                    onGoHome = {
-                        lastPaymentSuccess = null
-                        selectedIndex = 0
-                    }
-                )
-                8 -> {
-                    val adminNewsViewModel = remember { AdminNewsViewModel() }
-
-                    if (showNewsForm) {
-                        NewsFormScreen(
-                            newsToEdit = newsToEdit,
-                            viewModel = adminNewsViewModel,
-                            onBack = {
-                                showNewsForm = false
-                                newsToEdit = null
-                            }
-                        )
-                    } else {
-                        AdminNewsScreen(
-                            onBack = { selectedIndex = 0 },
-                            onEditNews = { news ->
-                                newsToEdit = news
-                                showNewsForm = true
-                            },
-                            onCreateNews = {
-                                newsToEdit = null
-                                showNewsForm = true
-                            }
-                        )
-                    }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            when {
+                // Pantalla de administración de usuarios
+                showUserAdmin -> {
+                    UserAdminScreen(
+                        onNavigateBack = {
+                            showUserAdmin = false
+                            selectedIndex = 0
+                        }
+                    )
                 }
-                3 -> {
-                    if (isEditing) {
-                        ProfileEditScreen(
-                            onSave = { _, _, _ -> /* no-op for now */ },
-                            onBack = {
-                                isEditing = false
-                                // Recargar los datos del usuario desde la sesión actualizada
-                                currentUser = sessionManager.getUser()
-                            }
-                        )
-                    } else {
-                        ProfileScreen(
-                            name = currentUser?.name ?: "",
-                            email = currentUser?.email ?: "",
-                            onEditClicked = { isEditing = true }
-                        )
-                    }
+                // Pantalla de administración de productos
+                showAdminProducts -> {
+                    AdminProductsScreen(
+                        onBack = {
+                            showAdminProducts = false
+                            selectedIndex = 0
+                        }
+                    )
                 }
+                // Pantallas normales
                 else -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("Pantalla: $currentScreen")
+                    Fondo_2()
+                    when (selectedIndex) {
+                        0 -> HomeScreen()
+                        1 -> CatalogScreen()
+                        2 -> NewsScreen()
+                        4 -> FavoritesScreen()
+                        5 -> CartScreen(onNavigateToPay = { selectedIndex = 6 })
+                        6 -> PayScreen(
+                            onCancel = { selectedIndex = 0 },
+                            onSuccess = {
+                                lastPaymentSuccess = true
+                                selectedIndex = 7
+                            },
+                            onFailure = {
+                                lastPaymentSuccess = false
+                                selectedIndex = 7
+                            }
+                        )
+                        7 -> PayResultScreen(
+                            isSuccess = (lastPaymentSuccess == true),
+                            onRetry = {
+                                lastPaymentSuccess = null
+                                selectedIndex = 6
+                            },
+                            onGoHome = {
+                                lastPaymentSuccess = null
+                                selectedIndex = 0
+                            }
+                        )
+                        8 -> {
+                            val adminNewsViewModel = remember { AdminNewsViewModel() }
+
+                            if (showNewsForm) {
+                                NewsFormScreen(
+                                    newsToEdit = newsToEdit,
+                                    viewModel = adminNewsViewModel,
+                                    onBack = {
+                                        showNewsForm = false
+                                        newsToEdit = null
+                                    }
+                                )
+                            } else {
+                                AdminNewsScreen(
+                                    onBack = { selectedIndex = 0 },
+                                    onEditNews = { news ->
+                                        newsToEdit = news
+                                        showNewsForm = true
+                                    },
+                                    onCreateNews = {
+                                        newsToEdit = null
+                                        showNewsForm = true
+                                    }
+                                )
+                            }
+                        }
+                        3 -> {
+                            if (isEditing) {
+                                ProfileEditScreen(
+                                    onSave = { _, _, _ -> /* no-op for now */ },
+                                    onBack = {
+                                        isEditing = false
+                                        currentUser = sessionManager.getUser()
+                                    }
+                                )
+                            } else {
+                                ProfileScreen(
+                                    name = currentUser?.name ?: "",
+                                    email = currentUser?.email ?: "",
+                                    onEditClicked = { isEditing = true }
+                                )
+                            }
+                        }
+                        else -> {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("Pantalla: $currentScreen")
+                            }
+                        }
                     }
                 }
             }
         }
-    }
 
-    // Diálogo de confirmación de cierre de sesión
-    if (showLogoutDialog) {
-        AlertDialog(
-            onDismissRequest = { showLogoutDialog = false },
-            title = { Text("Cerrar Sesión") },
-            text = { Text("¿Estás seguro que deseas cerrar sesión?") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showLogoutDialog = false
-                        sessionManager.clearSession()
-                        onLogout()
+        // Diálogo de confirmación de cierre de sesión
+        if (showLogoutDialog) {
+            AlertDialog(
+                onDismissRequest = { showLogoutDialog = false },
+                title = { Text("Cerrar Sesión") },
+                text = { Text("¿Estás seguro que deseas cerrar sesión?") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showLogoutDialog = false
+                            sessionManager.clearSession()
+                            onLogout()
+                        }
+                    ) {
+                        Text("Sí, cerrar sesión")
                     }
-                ) {
-                    Text("Sí, cerrar sesión")
+                },
+                dismissButton = {
+                    TextButton(onClick = { showLogoutDialog = false }) {
+                        Text("Cancelar")
+                    }
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { showLogoutDialog = false }) {
-                    Text("Cancelar")
-                }
-            }
-        )
+            )
+        }
     }
- }
 }

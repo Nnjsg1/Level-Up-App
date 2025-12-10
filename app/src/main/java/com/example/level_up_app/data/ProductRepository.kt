@@ -7,22 +7,29 @@ class ProductRepository {
     private val apiService = RetrofitInstance.api
 
     /**
-     * Obtiene todos los productos
+     * Obtiene todos los productos - método compatible con el admin
      */
-    suspend fun fetchProducts(): List<Product>? {
+    suspend fun getAllProducts(): List<Product> {
         return try {
             val response = apiService.getProducts()
             if (response.isSuccessful) {
                 Log.d("ProductRepository", "Productos obtenidos: ${response.body()?.size}")
-                response.body()
+                response.body() ?: emptyList()
             } else {
-                Log.e("ProductRepository", "Error fetching products: ${response.code()}")
+                Log.e("ProductRepository", "Error al obtener productos: ${response.code()}")
                 emptyList()
             }
         } catch (e: Exception) {
-            Log.e("ProductRepository", "Exception fetching products: ${e.message}", e)
-            null
+            Log.e("ProductRepository", "Excepción al obtener productos", e)
+            emptyList()
         }
+    }
+
+    /**
+     * Obtiene todos los productos - método alternativo
+     */
+    suspend fun fetchProducts(): List<Product>? {
+        return getAllProducts().takeIf { it.isNotEmpty() }
     }
 
     /**
@@ -86,69 +93,91 @@ class ProductRepository {
         return try {
             val response = apiService.createProduct(product)
             if (response.isSuccessful) {
+                Log.d("ProductRepository", "Producto creado exitosamente")
                 response.body()
             } else {
-                Log.e("ProductRepository", "Error creating product: ${response.code()}")
-                null
+                Log.e("ProductRepository", "Error al crear producto: ${response.code()}")
+                throw Exception("Error al crear producto: ${response.code()}")
             }
         } catch (e: Exception) {
-            Log.e("ProductRepository", "Exception creating product: ${e.message}")
-            null
+            Log.e("ProductRepository", "Excepción al crear producto", e)
+            throw e
         }
     }
 
     /**
-     * Actualiza un producto existente
+     * Actualiza un producto existente - para admin
      */
-    suspend fun updateProduct(id: Long, product: Product): Product? {
+    suspend fun updateProduct(id: Int, product: Product): Product? {
         return try {
-            val response = apiService.updateProduct(id, product)
+            val response = apiService.updateProduct(id.toLong(), product)
             if (response.isSuccessful) {
+                Log.d("ProductRepository", "Producto actualizado exitosamente")
                 response.body()
             } else {
-                Log.e("ProductRepository", "Error updating product: ${response.code()}")
-                null
+                Log.e("ProductRepository", "Error al actualizar producto: ${response.code()}")
+                throw Exception("Error al actualizar producto: ${response.code()}")
             }
         } catch (e: Exception) {
-            Log.e("ProductRepository", "Exception updating product: ${e.message}")
-            null
+            Log.e("ProductRepository", "Excepción al actualizar producto", e)
+            throw e
         }
     }
 
     /**
-     * Elimina un producto
+     * Elimina un producto - para admin
      */
-    suspend fun deleteProduct(id: Long): Boolean {
-        return try {
-            val response = apiService.deleteProduct(id)
+    suspend fun deleteProduct(id: Int) {
+        try {
+            val response = apiService.deleteProduct(id.toLong())
             if (response.isSuccessful) {
-                true
+                Log.d("ProductRepository", "Producto eliminado exitosamente")
             } else {
-                Log.e("ProductRepository", "Error deleting product: ${response.code()}")
-                false
+                Log.e("ProductRepository", "Error al eliminar producto: ${response.code()}")
+                throw Exception("Error al eliminar producto: ${response.code()}")
             }
         } catch (e: Exception) {
-            Log.e("ProductRepository", "Exception deleting product: ${e.message}")
-            false
+            Log.e("ProductRepository", "Excepción al eliminar producto", e)
+            throw e
         }
     }
 
     /**
      * Obtiene todas las categorías
      */
-    suspend fun fetchCategories(): List<Category>? {
+    suspend fun getAllCategories(): List<Category> {
         return try {
             val response = apiService.getCategories()
             if (response.isSuccessful) {
-                response.body()
+                response.body() ?: emptyList()
             } else {
-                Log.e("ProductRepository", "Error fetching categories: ${response.code()}")
-                emptyList()
+                Log.e("ProductRepository", "Error al obtener categorías: ${response.code()}")
+                getMockCategories() // Fallback a categorías mock
             }
         } catch (e: Exception) {
-            Log.e("ProductRepository", "Exception fetching categories: ${e.message}")
-            null
+            Log.e("ProductRepository", "Excepción al obtener categorías", e)
+            getMockCategories() // Fallback a categorías mock
         }
     }
+
+    /**
+     * Obtiene todas las categorías - método alternativo
+     */
+    suspend fun fetchCategories(): List<Category>? {
+        return getAllCategories().takeIf { it.isNotEmpty() }
+    }
+}
+
+/**
+ * Función temporal para obtener categorías mock hasta que el endpoint esté disponible
+ */
+fun getMockCategories(): List<Category> {
+    return listOf(
+        Category(1, "Gaming"),
+        Category(2, "Accesorios"),
+        Category(3, "Hardware"),
+        Category(4, "Software"),
+        Category(5, "Periféricos")
+    )
 }
 

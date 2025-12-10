@@ -8,6 +8,7 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.AlertDialog
@@ -40,6 +41,7 @@ import com.example.level_up_app.buys.PayResultScreen
 import com.example.level_up_app.screen.Fondo_2
 import androidx.compose.ui.platform.LocalContext
 import com.example.level_up_app.utils.SessionManager
+import com.example.level_up_app.ui.admin.AdminProductsScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,19 +61,23 @@ fun MainMenu(
     var showAdminMenu by remember { mutableStateOf(false) }
     // Estado para controlar el diálogo de cerrar sesión
     var showLogoutDialog by remember { mutableStateOf(false) }
+    // Estado para controlar la navegación a admin
+    var showAdminProducts by remember { mutableStateOf(false) }
 
-    val currentScreen =
-
+    val currentScreen = if (showAdminProducts) {
+        "Admin - Productos"
+    } else {
         when (selectedIndex) {
-        0 -> "Inicio"
-        1 -> "Catalogo"
-        2 -> "Noticias"
-        3 -> "Perfil"
-        4 -> "Favoritos"
-        5 -> "Carrito"
-        6 -> "Pago"
-        7 -> "Resultado pago"
-        else -> ""
+            0 -> "Inicio"
+            1 -> "Catalogo"
+            2 -> "Noticias"
+            3 -> "Perfil"
+            4 -> "Favoritos"
+            5 -> "Carrito"
+            6 -> "Pago"
+            7 -> "Resultado pago"
+            else -> ""
+        }
     }
 
     Scaffold(
@@ -79,9 +85,16 @@ fun MainMenu(
             CenterAlignedTopAppBar(
                 title = { Text(currentScreen.uppercase()) },
                 navigationIcon = {
-                    // Menú de administrador (solo si es admin)
-                    if (currentUser?.isAdmin == true) {
-
+                    if (showAdminProducts) {
+                        // Botón de regreso en pantalla de admin
+                        IconButton(onClick = { showAdminProducts = false }) {
+                            Icon(
+                                imageVector = Icons.Filled.ArrowBack,
+                                contentDescription = "Regresar"
+                            )
+                        }
+                    } else if (currentUser?.isAdmin == true) {
+                        // Menú de administrador (solo si es admin y no estamos en admin)
                         IconButton(onClick = { showAdminMenu = true }) {
                             Icon(
                                 imageVector = Icons.Filled.Star,
@@ -97,7 +110,7 @@ fun MainMenu(
                                 text = { Text("Administrar Productos") },
                                 onClick = {
                                     showAdminMenu = false
-                                    // TODO: Navegar a administración de productos
+                                    showAdminProducts = true
                                 }
                             )
                             DropdownMenuItem(
@@ -140,10 +153,14 @@ fun MainMenu(
             )
         },
          // when user selects another tab, make sure we leave edit mode
-         bottomBar = { BottomNavBar(selectedIndex = selectedIndex, onItemSelected = { index ->
-             selectedIndex = index
-             if (index != 3) isEditing = false
-         }, onProfile = onProfile) }
+         bottomBar = {
+             if (!showAdminProducts) {
+                 BottomNavBar(selectedIndex = selectedIndex, onItemSelected = { index ->
+                     selectedIndex = index
+                     if (index != 3) isEditing = false
+                 }, onProfile = onProfile)
+             }
+         }
 
     ) { innerPadding ->
         Box(
@@ -151,60 +168,67 @@ fun MainMenu(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            Fondo_2()
-            when (selectedIndex) {
-                0 -> HomeScreen()
-                1 -> CatalogScreen()
-                2 -> NewsScreen()
-                4 -> FavoritesScreen()
-                5 -> CartScreen(onNavigateToPay = { selectedIndex = 6 })
-                6 -> PayScreen(
-                    onCancel = { selectedIndex = 0 },
-                    onSuccess = {
-                        lastPaymentSuccess = true
-                        selectedIndex = 7
-                    },
-                    onFailure = {
-                        lastPaymentSuccess = false
-                        selectedIndex = 7
-                    }
+            if (showAdminProducts) {
+                // Pantalla de administración de productos
+                AdminProductsScreen(
+                    onBack = { showAdminProducts = false }
                 )
-                7 -> PayResultScreen(
-                    isSuccess = (lastPaymentSuccess == true),
-                    onRetry = {
-                        // al reintentar limpiamos el estado y volvemos a la pantalla de pago
-                        lastPaymentSuccess = null
-                        selectedIndex = 6
-                    },
-                    onGoHome = {
-                        lastPaymentSuccess = null
-                        selectedIndex = 0
+            } else {
+                Fondo_2()
+                when (selectedIndex) {
+                    0 -> HomeScreen()
+                    1 -> CatalogScreen()
+                    2 -> NewsScreen()
+                    4 -> FavoritesScreen()
+                    5 -> CartScreen(onNavigateToPay = { selectedIndex = 6 })
+                    6 -> PayScreen(
+                        onCancel = { selectedIndex = 0 },
+                        onSuccess = {
+                            lastPaymentSuccess = true
+                            selectedIndex = 7
+                        },
+                        onFailure = {
+                            lastPaymentSuccess = false
+                            selectedIndex = 7
+                        }
+                    )
+                    7 -> PayResultScreen(
+                        isSuccess = (lastPaymentSuccess == true),
+                        onRetry = {
+                            // al reintentar limpiamos el estado y volvemos a la pantalla de pago
+                            lastPaymentSuccess = null
+                            selectedIndex = 6
+                        },
+                        onGoHome = {
+                            lastPaymentSuccess = null
+                            selectedIndex = 0
+                        }
+                    )
+                    3 -> {
+                        if (isEditing) {
+                            ProfileEditScreen(
+                                onSave = { _, _, _ -> /* no-op for now */ },
+                                onBack = {
+                                    isEditing = false
+                                    // Recargar los datos del usuario desde la sesión actualizada
+                                    currentUser = sessionManager.getUser()
+                                }
+                            )
+                        } else {
+                            ProfileScreen(
+                                name = currentUser?.name ?: "",
+                                email = currentUser?.email ?: "",
+                                onEditClicked = { isEditing = true }
+                            )
+                        }
                     }
-                )
-                3 -> {
-                    if (isEditing) {
-                        ProfileEditScreen(
-                            onSave = { _, _, _ -> /* no-op for now */ },
-                            onBack = {
-                                isEditing = false
-                                // Recargar los datos del usuario desde la sesión actualizada
-                                currentUser = sessionManager.getUser()
-                            }
-                        )
-                    } else {
-                        ProfileScreen(
-                            name = currentUser?.name ?: "",
-                            email = currentUser?.email ?: "",
-                            onEditClicked = { isEditing = true }
-                        )
-                    }
-                }
-                else -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("Pantalla: $currentScreen")
+                    else -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("Pantalla: $currentScreen")
+                        }
                     }
                 }
             }

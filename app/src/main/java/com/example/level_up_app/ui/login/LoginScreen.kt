@@ -143,11 +143,19 @@ fun LoginScreen(
 
                 Button(
                     onClick = { viewModel.Login() },
+                    enabled = !uiState.isLoading,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 8.dp)
                 ) {
-                    Text("Inicio Sesion")
+                    if (uiState.isLoading) {
+                        androidx.compose.material3.CircularProgressIndicator(
+                            modifier = Modifier.height(24.dp),
+                            color = Color.White
+                        )
+                    } else {
+                        Text("Inicio Sesion")
+                    }
                 }
                 Button(
                     colors= ButtonDefaults.buttonColors(

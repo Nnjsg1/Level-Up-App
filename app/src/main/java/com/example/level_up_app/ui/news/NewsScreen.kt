@@ -27,6 +27,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.media3.common.util.UnstableApi
 
+@UnstableApi
 @Composable
 fun NewsScreen(
     viewModel: NewsViewModel = remember { NewsViewModel() }
@@ -127,10 +128,16 @@ fun NewsCompactCard(
         Row(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Imagen de la noticia
-            if (news.image.isNotEmpty()) {
+            // Usar thumbnail si existe, si no usar image
+            val displayImage = if (news.thumbnail.isNotEmpty()) {
+                news.thumbnail
+            } else {
+                news.image
+            }
+
+            if (displayImage.isNotEmpty()) {
                 AsyncImage(
-                    model = ImageUtils.getImageUrl(news.image),
+                    model = ImageUtils.getImageUrl(displayImage),
                     contentDescription = news.title,
                     modifier = Modifier
                         .width(120.dp)

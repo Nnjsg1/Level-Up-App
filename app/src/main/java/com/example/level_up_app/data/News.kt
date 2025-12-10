@@ -8,6 +8,7 @@ data class News(
     val content: String = "",
     val summary: String = "",
     val image: String = "",
+    val thumbnail: String = "",
     val author: String = "Admin",
     val category: String = "General",
     val views: Int = 0,

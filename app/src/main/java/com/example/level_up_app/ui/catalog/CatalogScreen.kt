@@ -22,7 +22,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import com.example.level_up_app.data.Product
-import com.example.level_up_app.data.ProductRepository
 import com.example.level_up_app.data.CartRepository
 import com.example.level_up_app.data.FavoritesRepository
 import kotlinx.coroutines.launch
@@ -34,35 +33,79 @@ fun formatPrice(price: Double): String {
 }
 
 @Composable
-fun CatalogScreen() {
+fun CatalogScreen(
+    viewModel: CatalogViewModel = remember { CatalogViewModel() }
+) {
     var selectedProduct by remember { mutableStateOf<Product?>(null) }
-    val products = ProductRepository.products
+    val uiState by viewModel.uiState.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (products.isEmpty()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "No hay productos en el catálogo",
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(products) { product ->
-                    ProductCard(
-                        product = product,
-                        onClick = { selectedProduct = product }
-                    )
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Barra de búsqueda (opcional, puedes agregarla después)
+
+            when {
+                uiState.isLoading -> {
+                    // Mostrar indicador de carga
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+                uiState.error != null -> {
+                    // Mostrar error
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = uiState.error ?: "Error desconocido",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = { viewModel.loadProducts() }) {
+                            Text("Reintentar")
+                        }
+                    }
+                }
+                uiState.products.isEmpty() -> {
+                    // No hay productos
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "No hay productos en el catálogo",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = { viewModel.loadProducts() }) {
+                            Text("Recargar")
+                        }
+                    }
+                }
+                else -> {
+                    // Mostrar productos
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(uiState.products) { product ->
+                            ProductCard(
+                                product = product,
+                                onClick = { selectedProduct = product }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -113,9 +156,9 @@ fun ProductCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
-                if (product.category.isNotEmpty()) {
+                if (product.category != null) {
                     Text(
-                        text = product.category,
+                        text = product.category.name,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.padding(top = 2.dp)
@@ -237,14 +280,14 @@ fun ProductDetailDialog(
                     )
 
                     // Categoría
-                    if (product.category.isNotEmpty()) {
+                    if (product.category != null) {
                         Card(
                             colors = CardDefaults.cardColors(
                                 containerColor = MaterialTheme.colorScheme.secondaryContainer
                             )
                         ) {
                             Text(
-                                text = product.category,
+                                text = product.category.name,
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)

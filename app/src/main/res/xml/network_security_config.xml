@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!--
+        Configuración para permitir tráfico HTTP (no seguro)
+        SOLO USAR EN DESARROLLO
+        En producción usa HTTPS
+    -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!--
+        Configuración específica para dominios
+        Si quieres ser más específico, puedes definir dominios individuales
+    -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">192.168.1.1</domain>
+        <!-- Agrega aquí otras IPs locales si es necesario -->
+    </domain-config>
+</network-security-config>
+

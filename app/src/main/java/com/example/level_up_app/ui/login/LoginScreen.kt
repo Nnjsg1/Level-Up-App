@@ -39,6 +39,8 @@ import com.example.level_up_app.R
 import com.example.level_up_app.screen.Fondo
 import com.example.level_up_app.screen.Fondo_2
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.platform.LocalContext
+import com.example.level_up_app.utils.SessionManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,10 +51,13 @@ fun LoginScreen(
     onNavigateToMain: () -> Unit = {}
 ){
     val uiState by viewModel.FormData.collectAsState()
+    val context = LocalContext.current
+    val sessionManager = remember { SessionManager(context) }
 
     // Navegar al Main cuando el login sea exitoso
     LaunchedEffect(uiState.isLogin) {
-        if (uiState.isLogin) {
+        if (uiState.isLogin && uiState.user != null) {
+            sessionManager.saveSession(uiState.user!!)
             onNavigateToMain()
         }
     }
@@ -143,11 +148,19 @@ fun LoginScreen(
 
                 Button(
                     onClick = { viewModel.Login() },
+                    enabled = !uiState.isLoading,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 8.dp)
                 ) {
-                    Text("Inicio Sesion")
+                    if (uiState.isLoading) {
+                        androidx.compose.material3.CircularProgressIndicator(
+                            modifier = Modifier.height(24.dp),
+                            color = Color.White
+                        )
+                    } else {
+                        Text("Inicio Sesion")
+                    }
                 }
                 Button(
                     colors= ButtonDefaults.buttonColors(

@@ -26,6 +26,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.core.content.FileProvider
 import coil.compose.rememberAsyncImagePainter
 import java.io.File
+import com.example.level_up_app.utils.SessionManager
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 
 private const val PREFS_NAME = "profile_prefs"
 private const val KEY_PROFILE_IMAGE = "profile_image_uri"
@@ -41,30 +45,41 @@ fun ProfileEditScreen(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-
-    var name by remember { mutableStateOf(initialName) }
-    var email by remember { mutableStateOf(initialEmail) }
-    var password by remember { mutableStateOf(initialPassword) }
-
-
     val context = LocalContext.current
+    val sessionManager = remember { SessionManager(context) }
+    val currentUser = remember { sessionManager.getUser() }
+
+    val viewModel = remember { ProfileEditViewModel() }
+    val uiState by viewModel.uiState.collectAsState()
+
     var permisoCamara by remember { mutableStateOf(false) }
     var profileImageUri by remember { mutableStateOf<Uri?>(null) }
-
     var pendingImageUri by remember { mutableStateOf<Uri?>(null) }
 
+    // Inicializar el nombre desde el usuario actual
+    LaunchedEffect(currentUser) {
+        currentUser?.let {
+            viewModel.setInitialData(it.name)
+        }
+    }
+
+    // Manejar éxito en la actualización
+    LaunchedEffect(uiState.isSuccess) {
+        if (uiState.isSuccess) {
+            snackbarHostState.showSnackbar("Cambios guardados exitosamente")
+            viewModel.resetSuccess()
+            onBack()
+        }
+    }
 
     val permisoLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         permisoCamara = granted
     }
 
-
     val takePictureLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
         if (success) {
-
             profileImageUri = pendingImageUri
         }
-
         pendingImageUri = null
     }
 
@@ -139,45 +154,66 @@ fun ProfileEditScreen(
 
         SnackbarHost(hostState = snackbarHostState)
 
-        Text(text = "NOMBRE")
+        Text(text = "NOMBRE", style = MaterialTheme.typography.labelMedium)
         OutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
+            value = uiState.name,
+            onValueChange = { viewModel.updateName(it) },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp)
+                .padding(top = 8.dp),
+            enabled = !uiState.isLoading,
+            singleLine = true
         )
 
-        Text(text = "EMAIL", modifier = Modifier.padding(top = 12.dp))
+        Text(text = "EMAIL (no se puede editar)", modifier = Modifier.padding(top = 12.dp), style = MaterialTheme.typography.labelMedium)
         OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
+            value = currentUser?.email ?: "",
+            onValueChange = { },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp)
+                .padding(top = 8.dp),
+            enabled = false,
+            singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         )
 
-        Text(text = "CONTRASEÑA", modifier = Modifier.padding(top = 12.dp))
+        Text(text = "NUEVA CONTRASEÑA", modifier = Modifier.padding(top = 12.dp), style = MaterialTheme.typography.labelMedium)
         OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
+            value = uiState.clave,
+            onValueChange = { viewModel.updateClave(it) },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp)
+                .padding(top = 8.dp),
+            enabled = !uiState.isLoading,
+            singleLine = true,
+            placeholder = { Text("Ingresa tu nueva contraseña") }
         )
+
+        // Mostrar error si existe
+        uiState.error?.let { errorMsg ->
+            Text(
+                text = errorMsg,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 24.dp),
-
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Button(
                 onClick = {
                     scope.launch {
-
+                        // Guardar imagen de perfil
                         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                         val editor = prefs.edit()
                         if (profileImageUri != null) {
@@ -187,21 +223,34 @@ fun ProfileEditScreen(
                         }
                         editor.apply()
 
-                        snackbarHostState.showSnackbar("Guardado")
-                        onSave(name, email, password)
-                        onBack()
+                        // Guardar cambios del usuario en el backend
+                        currentUser?.let { user ->
+                            viewModel.saveChanges(user.id) { updatedUser ->
+                                // Actualizar la sesión con los nuevos datos
+                                sessionManager.saveSession(updatedUser)
+                            }
+                        }
                     }
                 },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                enabled = !uiState.isLoading
             ) {
-                Text(text = "Guardar Cambios")
+                if (uiState.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text(text = "Guardar Cambios")
+                }
             }
 
             OutlinedButton(
                 onClick = { onBack() },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                enabled = !uiState.isLoading
             ) {
-                Text(text = "Descartar Cambios")
+                Text(text = "Cancelar")
             }
         }
     }

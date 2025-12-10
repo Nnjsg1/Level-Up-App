@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -35,6 +35,8 @@ import com.example.level_up_app.ui.favorites.FavoritesScreen
 import com.example.level_up_app.buys.PayScreen
 import com.example.level_up_app.buys.PayResultScreen
 import com.example.level_up_app.screen.Fondo_2
+import androidx.compose.ui.platform.LocalContext
+import com.example.level_up_app.utils.SessionManager
 import com.example.level_up_app.data.UserSession
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,6 +44,10 @@ import com.example.level_up_app.data.UserSession
 fun MainMenu(
     onProfile: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+    val sessionManager = remember { SessionManager(context) }
+    var currentUser by remember { mutableStateOf(sessionManager.getUser()) }
+
     var selectedIndex by remember { mutableStateOf(0) }
     var isEditing by remember { mutableStateOf(false) }
     // nuevo estado: resultado del último pago (null = aún no se ha hecho)
@@ -64,53 +70,46 @@ fun MainMenu(
     }
 
     Scaffold(
-
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(currentScreen.uppercase()) },
                 navigationIcon = {
-                    // Mostrar menú de administrador solo si el usuario es admin
-                    if (UserSession.isAdmin) {
-                        Box {
-                            IconButton(onClick = { showAdminMenu = true }) {
-                                Icon(
-                                    imageVector = Icons.Filled.Menu,
-                                    contentDescription = "Menú Administrador"
-                                )
-                            }
-                            DropdownMenu(
-                                expanded = showAdminMenu,
-                                onDismissRequest = { showAdminMenu = false }
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text("Agregar Producto") },
-                                    onClick = {
-                                        showAdminMenu = false
-                                        // TODO: Navegar a agregar producto
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("Administrar Usuarios") },
-                                    onClick = {
-                                        showAdminMenu = false
-                                        // TODO: Navegar a administrar usuarios
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("Administrar Productos") },
-                                    onClick = {
-                                        showAdminMenu = false
-                                        // TODO: Navegar a administrar productos
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("Administrar Noticias") },
-                                    onClick = {
-                                        showAdminMenu = false
-                                        // TODO: Navegar a administrar noticias
-                                    }
-                                )
-                            }
+                    // Menú de administrador (solo si es admin)
+                    if (currentUser?.isAdmin == true) {
+                        var showAdminMenu by remember { mutableStateOf(false) }
+
+                        IconButton(onClick = { showAdminMenu = true }) {
+                            Icon(
+                                imageVector = Icons.Filled.Star,
+                                contentDescription = "Panel de Administración"
+                            )
+                        }
+
+                        androidx.compose.material3.DropdownMenu(
+                            expanded = showAdminMenu,
+                            onDismissRequest = { showAdminMenu = false }
+                        ) {
+                            androidx.compose.material3.DropdownMenuItem(
+                                text = { Text("Administrar Productos") },
+                                onClick = {
+                                    showAdminMenu = false
+                                    // TODO: Navegar a administración de productos
+                                }
+                            )
+                            androidx.compose.material3.DropdownMenuItem(
+                                text = { Text("Administrar Usuarios") },
+                                onClick = {
+                                    showAdminMenu = false
+                                    // TODO: Navegar a administración de usuarios
+                                }
+                            )
+                            androidx.compose.material3.DropdownMenuItem(
+                                text = { Text("Administrar Noticias") },
+                                onClick = {
+                                    showAdminMenu = false
+                                    // TODO: Navegar a administración de noticias
+                                }
+                            )
                         }
                     }
                 },
@@ -174,9 +173,20 @@ fun MainMenu(
                 )
                 3 -> {
                     if (isEditing) {
-                        ProfileEditScreen(onSave = { _, _, _ -> /* no-op for now */ }, onBack = { isEditing = false })
+                        ProfileEditScreen(
+                            onSave = { _, _, _ -> /* no-op for now */ },
+                            onBack = {
+                                isEditing = false
+                                // Recargar los datos del usuario desde la sesión actualizada
+                                currentUser = sessionManager.getUser()
+                            }
+                        )
                     } else {
-                        ProfileScreen(onEditClicked = { isEditing = true })
+                        ProfileScreen(
+                            name = currentUser?.name ?: "",
+                            email = currentUser?.email ?: "",
+                            onEditClicked = { isEditing = true }
+                        )
                     }
                 }
                 else -> {

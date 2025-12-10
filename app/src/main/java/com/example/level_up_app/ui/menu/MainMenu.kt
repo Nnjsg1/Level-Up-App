@@ -27,10 +27,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.media3.common.util.UnstableApi
 import com.example.level_up_app.ui.catalog.CatalogScreen
 import com.example.level_up_app.ui.cart.CartScreen
 import com.example.level_up_app.ui.components.BottomNavBar
 import com.example.level_up_app.ui.news.NewsScreen
+import com.example.level_up_app.ui.admin.AdminNewsScreen
+import com.example.level_up_app.ui.admin.NewsFormScreen
+import com.example.level_up_app.ui.admin.AdminNewsViewModel
 import com.example.level_up_app.ui.profile.ProfileEditScreen
 import com.example.level_up_app.ui.profile.ProfileScreen
 import com.example.level_up_app.ui.main.HomeScreen
@@ -41,6 +45,7 @@ import com.example.level_up_app.screen.Fondo_2
 import androidx.compose.ui.platform.LocalContext
 import com.example.level_up_app.utils.SessionManager
 
+@UnstableApi
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainMenu(
@@ -59,6 +64,10 @@ fun MainMenu(
     var showAdminMenu by remember { mutableStateOf(false) }
     // Estado para controlar el diálogo de cerrar sesión
     var showLogoutDialog by remember { mutableStateOf(false) }
+
+    var newsToEdit by remember { mutableStateOf<com.example.level_up_app.data.News?>(null) }
+    var showNewsForm by remember { mutableStateOf(false) }
+
 
     val currentScreen =
 
@@ -111,7 +120,7 @@ fun MainMenu(
                                 text = { Text("Administrar Noticias") },
                                 onClick = {
                                     showAdminMenu = false
-                                    // TODO: Navegar a administración de noticias
+                                    selectedIndex = 8 // Nuevo índice para AdminNews
                                 }
                             )
                         }
@@ -181,6 +190,32 @@ fun MainMenu(
                         selectedIndex = 0
                     }
                 )
+                8 -> {
+                    val adminNewsViewModel = remember { AdminNewsViewModel() }
+
+                    if (showNewsForm) {
+                        NewsFormScreen(
+                            newsToEdit = newsToEdit,
+                            viewModel = adminNewsViewModel,
+                            onBack = {
+                                showNewsForm = false
+                                newsToEdit = null
+                            }
+                        )
+                    } else {
+                        AdminNewsScreen(
+                            onBack = { selectedIndex = 0 },
+                            onEditNews = { news ->
+                                newsToEdit = news
+                                showNewsForm = true
+                            },
+                            onCreateNews = {
+                                newsToEdit = null
+                                showNewsForm = true
+                            }
+                        )
+                    }
+                }
                 3 -> {
                     if (isEditing) {
                         ProfileEditScreen(

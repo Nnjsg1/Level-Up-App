@@ -25,6 +25,7 @@ import com.example.level_up_app.data.News
 import com.example.level_up_app.utils.ImageUtils
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.media3.common.util.UnstableApi
 
 @Composable
 fun NewsScreen(
@@ -201,6 +202,7 @@ fun NewsCompactCard(
     }
 }
 
+@UnstableApi
 @Composable
 fun NewsDetailDialog(
     news: News,
@@ -254,17 +256,33 @@ fun NewsDetailDialog(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Imagen de la noticia
+                    // Video o Imagen de la noticia
                     if (news.image.isNotEmpty()) {
-                        AsyncImage(
-                            model = ImageUtils.getImageUrl(news.image),
-                            contentDescription = news.title,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(250.dp)
-                                .clip(RoundedCornerShape(12.dp)),
-                            contentScale = ContentScale.Crop
-                        )
+                        // Detectar si es un video por la extensión
+                        val isVideo = news.image.endsWith(".mp4", ignoreCase = true) ||
+                                news.image.endsWith(".webm", ignoreCase = true) ||
+                                news.image.endsWith(".mkv", ignoreCase = true) ||
+                                news.image.endsWith(".avi", ignoreCase = true)
+
+                        if (isVideo) {
+                            // Mostrar video player
+                            VideoPlayer(
+                                videoResourceName = ImageUtils.getImageUrl(news.image),
+                                modifier = Modifier.fillMaxWidth(),
+                                isUrl = true
+                            )
+                        } else {
+                            // Mostrar imagen
+                            AsyncImage(
+                                model = ImageUtils.getImageUrl(news.image),
+                                contentDescription = news.title,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(250.dp)
+                                    .clip(RoundedCornerShape(12.dp)),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
                     }
 
                     // Categoría y fecha

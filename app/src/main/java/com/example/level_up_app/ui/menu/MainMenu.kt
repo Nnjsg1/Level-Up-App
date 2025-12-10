@@ -27,10 +27,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.media3.common.util.UnstableApi
 import com.example.level_up_app.ui.catalog.CatalogScreen
 import com.example.level_up_app.ui.cart.CartScreen
 import com.example.level_up_app.ui.components.BottomNavBar
 import com.example.level_up_app.ui.news.NewsScreen
+import com.example.level_up_app.ui.admin.AdminNewsScreen
 import com.example.level_up_app.ui.profile.ProfileEditScreen
 import com.example.level_up_app.ui.profile.ProfileScreen
 import com.example.level_up_app.ui.main.HomeScreen
@@ -41,6 +43,7 @@ import com.example.level_up_app.screen.Fondo_2
 import androidx.compose.ui.platform.LocalContext
 import com.example.level_up_app.utils.SessionManager
 
+@UnstableApi
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainMenu(
@@ -111,7 +114,7 @@ fun MainMenu(
                                 text = { Text("Administrar Noticias") },
                                 onClick = {
                                     showAdminMenu = false
-                                    // TODO: Navegar a administración de noticias
+                                    selectedIndex = 8 // Nuevo índice para AdminNews
                                 }
                             )
                         }
@@ -179,6 +182,15 @@ fun MainMenu(
                     onGoHome = {
                         lastPaymentSuccess = null
                         selectedIndex = 0
+                    }
+                )
+                8 -> AdminNewsScreen(
+                    onBack = { selectedIndex = 0 },
+                    onEditNews = { news ->
+                        // TODO: Navegar a editar noticia
+                    },
+                    onCreateNews = {
+                        // TODO: Navegar a crear noticia
                     }
                 )
                 3 -> {

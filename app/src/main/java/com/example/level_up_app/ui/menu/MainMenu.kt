@@ -33,6 +33,8 @@ import com.example.level_up_app.ui.cart.CartScreen
 import com.example.level_up_app.ui.components.BottomNavBar
 import com.example.level_up_app.ui.news.NewsScreen
 import com.example.level_up_app.ui.admin.AdminNewsScreen
+import com.example.level_up_app.ui.admin.NewsFormScreen
+import com.example.level_up_app.ui.admin.AdminNewsViewModel
 import com.example.level_up_app.ui.profile.ProfileEditScreen
 import com.example.level_up_app.ui.profile.ProfileScreen
 import com.example.level_up_app.ui.main.HomeScreen
@@ -62,6 +64,9 @@ fun MainMenu(
     var showAdminMenu by remember { mutableStateOf(false) }
     // Estado para controlar el diálogo de cerrar sesión
     var showLogoutDialog by remember { mutableStateOf(false) }
+    // Estado para crear/editar noticias
+    var newsToEdit by remember { mutableStateOf<com.example.level_up_app.data.News?>(null) }
+    var showNewsForm by remember { mutableStateOf(false) }
 
     val currentScreen =
 
@@ -184,15 +189,32 @@ fun MainMenu(
                         selectedIndex = 0
                     }
                 )
-                8 -> AdminNewsScreen(
-                    onBack = { selectedIndex = 0 },
-                    onEditNews = { news ->
-                        // TODO: Navegar a editar noticia
-                    },
-                    onCreateNews = {
-                        // TODO: Navegar a crear noticia
+                8 -> {
+                    val adminNewsViewModel = remember { AdminNewsViewModel() }
+
+                    if (showNewsForm) {
+                        NewsFormScreen(
+                            newsToEdit = newsToEdit,
+                            viewModel = adminNewsViewModel,
+                            onBack = {
+                                showNewsForm = false
+                                newsToEdit = null
+                            }
+                        )
+                    } else {
+                        AdminNewsScreen(
+                            onBack = { selectedIndex = 0 },
+                            onEditNews = { news ->
+                                newsToEdit = news
+                                showNewsForm = true
+                            },
+                            onCreateNews = {
+                                newsToEdit = null
+                                showNewsForm = true
+                            }
+                        )
                     }
-                )
+                }
                 3 -> {
                     if (isEditing) {
                         ProfileEditScreen(

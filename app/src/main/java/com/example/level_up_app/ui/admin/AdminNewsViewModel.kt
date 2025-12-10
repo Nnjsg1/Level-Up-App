@@ -110,5 +110,63 @@ class AdminNewsViewModel : ViewModel() {
             error = null
         )
     }
+
+    fun createNews(news: News, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+
+            try {
+                val createdNews = newsRepository.createNews(news)
+                if (createdNews != null) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        successMessage = "Noticia creada correctamente"
+                    )
+                    loadAllNews()
+                    onSuccess()
+                } else {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = "Error al crear la noticia"
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e("AdminNewsViewModel", "Error creating news: ${e.message}")
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = "Error al crear: ${e.localizedMessage}"
+                )
+            }
+        }
+    }
+
+    fun updateNews(newsId: Long, news: News, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+
+            try {
+                val updatedNews = newsRepository.updateNews(newsId, news)
+                if (updatedNews != null) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        successMessage = "Noticia actualizada correctamente"
+                    )
+                    loadAllNews()
+                    onSuccess()
+                } else {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = "Error al actualizar la noticia"
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e("AdminNewsViewModel", "Error updating news: ${e.message}")
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = "Error al actualizar: ${e.localizedMessage}"
+                )
+            }
+        }
+    }
 }
 

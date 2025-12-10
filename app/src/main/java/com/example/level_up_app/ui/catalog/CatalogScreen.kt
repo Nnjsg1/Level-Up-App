@@ -24,6 +24,7 @@ import coil.compose.AsyncImage
 import com.example.level_up_app.data.Product
 import com.example.level_up_app.data.CartRepository
 import com.example.level_up_app.data.FavoritesRepository
+import com.example.level_up_app.utils.ImageUtils
 import kotlinx.coroutines.launch
 
 // Función para formatear precios en formato chileno
@@ -137,7 +138,7 @@ fun ProductCard(
             // Imagen del producto
             if (product.imageUrl.isNotEmpty()) {
                 AsyncImage(
-                    model = product.imageUrl,
+                    model = ImageUtils.getImageUrl(product.imageUrl),
                     contentDescription = product.name,
                     modifier = Modifier
                         .size(120.dp)
@@ -262,7 +263,7 @@ fun ProductDetailDialog(
                     // Imagen del producto (más grande)
                     if (product.imageUrl.isNotEmpty()) {
                         AsyncImage(
-                            model = product.imageUrl,
+                            model = ImageUtils.getImageUrl(product.imageUrl),
                             contentDescription = product.name,
                             modifier = Modifier
                                 .fillMaxWidth()

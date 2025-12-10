@@ -23,6 +23,7 @@ import com.example.level_up_app.ui.catalog.formatPrice
 import com.example.level_up_app.ui.catalog.CatalogViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.example.level_up_app.utils.ImageUtils
 
 @Composable
 fun HomeScreen(
@@ -147,7 +148,7 @@ fun FeaturedProductCard(
             // Imagen del producto
             if (product.imageUrl.isNotEmpty()) {
                 AsyncImage(
-                    model = product.imageUrl,
+                    model = ImageUtils.getImageUrl(product.imageUrl),
                     contentDescription = product.name,
                     modifier = Modifier
                         .fillMaxWidth()

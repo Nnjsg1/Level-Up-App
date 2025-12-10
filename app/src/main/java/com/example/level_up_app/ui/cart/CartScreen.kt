@@ -21,6 +21,7 @@ import coil.compose.AsyncImage
 import com.example.level_up_app.data.CartItem
 import com.example.level_up_app.data.CartRepository
 import com.example.level_up_app.ui.catalog.formatPrice
+import com.example.level_up_app.utils.ImageUtils
 
 @Composable
 fun CartScreen(
@@ -102,7 +103,7 @@ fun CartItemCard(
             // Imagen del producto
             if (cartItem.product.imageUrl.isNotEmpty()) {
                 AsyncImage(
-                    model = cartItem.product.imageUrl,
+                    model = ImageUtils.getImageUrl(cartItem.product.imageUrl),
                     contentDescription = cartItem.product.name,
                     modifier = Modifier
                         .size(80.dp)

@@ -64,9 +64,10 @@ fun MainMenu(
     var showAdminMenu by remember { mutableStateOf(false) }
     // Estado para controlar el diálogo de cerrar sesión
     var showLogoutDialog by remember { mutableStateOf(false) }
-    // Estado para crear/editar noticias
+
     var newsToEdit by remember { mutableStateOf<com.example.level_up_app.data.News?>(null) }
     var showNewsForm by remember { mutableStateOf(false) }
+
 
     val currentScreen =
 

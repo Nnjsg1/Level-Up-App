@@ -13,11 +13,11 @@ object FavoritesRepository {
         }
     }
 
-    fun removeFromFavorites(productId: String) {
+    fun removeFromFavorites(productId: Long) {
         _favorites.removeAll { it.id == productId }
     }
 
-    fun isFavorite(productId: String): Boolean {
+    fun isFavorite(productId: Long): Boolean {
         return _favorites.any { it.id == productId }
     }
 

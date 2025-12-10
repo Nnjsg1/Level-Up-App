@@ -3,6 +3,8 @@ package com.example.level_up_app.remote
 import com.example.level_up_app.data.LoginRequest
 import com.example.level_up_app.data.LoginResponse
 import com.example.level_up_app.data.Product
+import com.example.level_up_app.data.Category
+import com.example.level_up_app.data.Tag
 import com.example.level_up_app.data.User
 import retrofit2.Response
 import retrofit2.http.*
@@ -37,15 +39,26 @@ interface ApiService {
     suspend fun getProducts(): Response<List<Product>>
 
     @GET("products/{id}")
-    suspend fun getProductById(@Path("id") id: String): Response<Product>
+    suspend fun getProductById(@Path("id") id: Long): Response<Product>
+
+    @GET("products/category/{categoryId}")
+    suspend fun getProductsByCategory(@Path("categoryId") categoryId: Long): Response<List<Product>>
+
+    @GET("products/search/{title}")
+    suspend fun searchProducts(@Path("title") title: String): Response<List<Product>>
 
     @POST("products")
     suspend fun createProduct(@Body product: Product): Response<Product>
 
     @PUT("products/{id}")
-    suspend fun updateProduct(@Path("id") id: String, @Body product: Product): Response<Product>
+    suspend fun updateProduct(@Path("id") id: Long, @Body product: Product): Response<Product>
 
     @DELETE("products/{id}")
-    suspend fun deleteProduct(@Path("id") id: String): Response<Unit>
+    suspend fun deleteProduct(@Path("id") id: Long): Response<Unit>
+
+    // ============ ENDPOINTS DE CATEGORÍAS ============
+
+    @GET("categories")
+    suspend fun getCategories(): Response<List<Category>>
 }
 

@@ -18,17 +18,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.level_up_app.data.Product
-import com.example.level_up_app.data.ProductRepository
-import com.example.level_up_app.screen.Fondo
-import com.example.level_up_app.screen.Fondo_2
 import com.example.level_up_app.ui.catalog.ProductDetailDialog
 import com.example.level_up_app.ui.catalog.formatPrice
+import com.example.level_up_app.ui.catalog.CatalogViewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    viewModel: CatalogViewModel = remember { CatalogViewModel() }
+) {
     var selectedProduct by remember { mutableStateOf<Product?>(null) }
-    val products = ProductRepository.products
-    val featuredProducts = products.take(6) // Tomar los primeros 6 productos como destacados
+    val uiState by viewModel.uiState.collectAsState()
+    val featuredProducts = uiState.products.take(6) // Tomar los primeros 6 productos como destacados
 
     Column(
         modifier = Modifier
@@ -60,23 +62,54 @@ fun HomeScreen() {
                 .padding(bottom = 16.dp)
         )
 
-        // Lista de productos destacados (horizontal scroll)
-        if (featuredProducts.isEmpty()) {
-            Text(
-                text = "No hay productos disponibles",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(16.dp)
-            )
-        } else {
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(horizontal = 4.dp)
-            ) {
-                items(featuredProducts) { product ->
-                    FeaturedProductCard(
-                        product = product,
-                        onClick = { selectedProduct = product }
+        // Manejo de estados
+        when {
+            uiState.isLoading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(240.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            uiState.error != null -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Error al cargar productos",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(onClick = { viewModel.loadProducts() }) {
+                        Text("Reintentar")
+                    }
+                }
+            }
+            featuredProducts.isEmpty() -> {
+                Text(
+                    text = "No hay productos disponibles",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+            else -> {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(horizontal = 4.dp)
+                ) {
+                    items(featuredProducts) { product ->
+                        FeaturedProductCard(
+                            product = product,
+                            onClick = { selectedProduct = product }
+                        )
+                    }
                 }
             }
         }

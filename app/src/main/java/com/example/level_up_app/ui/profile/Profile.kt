@@ -28,7 +28,6 @@ fun ProfileScreen(
     modifier: Modifier = Modifier,
     name: String = "",
     email: String = "",
-    password: String = "",
     onEditClicked: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -96,13 +95,6 @@ fun ProfileScreen(
             overflow = TextOverflow.Ellipsis
         )
 
-        Text(text = "CONTRASEÑA", modifier = Modifier.padding(top = 12.dp))
-        Text(
-            text = if (password.isEmpty()) "" else "••••••••",
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp)
-        )
 
         Button(
             onClick = onEditClicked,

@@ -32,12 +32,18 @@ import com.example.level_up_app.ui.favorites.FavoritesScreen
 import com.example.level_up_app.buys.PayScreen
 import com.example.level_up_app.buys.PayResultScreen
 import com.example.level_up_app.screen.Fondo_2
+import androidx.compose.ui.platform.LocalContext
+import com.example.level_up_app.utils.SessionManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainMenu(
     onProfile: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+    val sessionManager = remember { SessionManager(context) }
+    val currentUser = remember { sessionManager.getUser() }
+
     var selectedIndex by remember { mutableStateOf(0) }
     var isEditing by remember { mutableStateOf(false) }
     // nuevo estado: resultado del último pago (null = aún no se ha hecho)
@@ -123,7 +129,11 @@ fun MainMenu(
                     if (isEditing) {
                         ProfileEditScreen(onSave = { _, _, _ -> /* no-op for now */ }, onBack = { isEditing = false })
                     } else {
-                        ProfileScreen(onEditClicked = { isEditing = true })
+                        ProfileScreen(
+                            name = currentUser?.name ?: "",
+                            email = currentUser?.email ?: "",
+                            onEditClicked = { isEditing = true }
+                        )
                     }
                 }
                 else -> {

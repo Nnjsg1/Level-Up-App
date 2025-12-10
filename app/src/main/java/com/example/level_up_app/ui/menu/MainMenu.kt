@@ -10,6 +10,8 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,6 +37,7 @@ import com.example.level_up_app.buys.PayResultScreen
 import com.example.level_up_app.screen.Fondo_2
 import androidx.compose.ui.platform.LocalContext
 import com.example.level_up_app.utils.SessionManager
+import com.example.level_up_app.data.UserSession
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,6 +52,9 @@ fun MainMenu(
     var isEditing by remember { mutableStateOf(false) }
     // nuevo estado: resultado del último pago (null = aún no se ha hecho)
     var lastPaymentSuccess by remember { mutableStateOf<Boolean?>(null) }
+    // Estado para controlar el menú desplegable de administrador
+    var showAdminMenu by remember { mutableStateOf(false) }
+
     val currentScreen =
 
         when (selectedIndex) {

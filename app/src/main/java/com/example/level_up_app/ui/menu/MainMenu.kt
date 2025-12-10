@@ -44,6 +44,7 @@ import com.example.level_up_app.buys.PayResultScreen
 import com.example.level_up_app.screen.Fondo_2
 import androidx.compose.ui.platform.LocalContext
 import com.example.level_up_app.utils.SessionManager
+import com.example.level_up_app.ui.screen.UserAdminScreen
 
 @UnstableApi
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,6 +65,8 @@ fun MainMenu(
     var showAdminMenu by remember { mutableStateOf(false) }
     // Estado para controlar el diálogo de cerrar sesión
     var showLogoutDialog by remember { mutableStateOf(false) }
+    // Estado para controlar la navegación a administración de usuarios
+    var showUserAdmin by remember { mutableStateOf(false) }
 
     var newsToEdit by remember { mutableStateOf<com.example.level_up_app.data.News?>(null) }
     var showNewsForm by remember { mutableStateOf(false) }
@@ -113,7 +116,7 @@ fun MainMenu(
                                 text = { Text("Administrar Usuarios") },
                                 onClick = {
                                     showAdminMenu = false
-                                    // TODO: Navegar a administración de usuarios
+                                    showUserAdmin = true
                                 }
                             )
                             DropdownMenuItem(
@@ -155,13 +158,24 @@ fun MainMenu(
          }, onProfile = onProfile) }
 
     ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            Fondo_2()
-            when (selectedIndex) {
+        // Mostrar pantalla de administración de usuarios si está activa
+        if (showUserAdmin) {
+            Box(modifier = Modifier.padding(innerPadding)) {
+                UserAdminScreen(
+                    onNavigateBack = {
+                        showUserAdmin = false
+                        selectedIndex = 0 // Volver al inicio
+                    }
+                )
+            }
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+                Fondo_2()
+                when (selectedIndex) {
                 0 -> HomeScreen()
                 1 -> CatalogScreen()
                 2 -> NewsScreen()
@@ -243,8 +257,8 @@ fun MainMenu(
                     }
                 }
             }
-         }
-     }
+        }
+    }
 
     // Diálogo de confirmación de cierre de sesión
     if (showLogoutDialog) {
@@ -271,3 +285,4 @@ fun MainMenu(
         )
     }
  }
+}

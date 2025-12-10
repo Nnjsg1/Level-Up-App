@@ -49,5 +49,83 @@ class UserRepository {
         Log.d(TAG, "✅ Usuario creado exitosamente: $createdUser")
         createdUser
     }
+
+    suspend fun updateUser(id: Int, user: User): Result<User> = runCatching {
+        Log.d(TAG, "🔵 Actualizando usuario ID: $id")
+        val response = api.updateUser(id, user)
+
+        if (!response.isSuccessful) {
+            val errorBody = response.errorBody()?.string() ?: "Sin detalles"
+            Log.e(TAG, "❌ Error updateUser: HTTP ${response.code()} - ${response.message()}")
+            Log.e(TAG, "❌ Error body: $errorBody")
+            error("HTTP ${response.code()}: $errorBody")
+        }
+
+        val updatedUser = response.body() ?: error("Empty body")
+        Log.d(TAG, "✅ Usuario actualizado exitosamente: $updatedUser")
+        updatedUser
+    }
+
+    suspend fun deactivateUser(id: Int): Result<User> = runCatching {
+        Log.d(TAG, "🔵 Desactivando usuario ID: $id")
+        val response = api.deactivateUser(id)
+
+        if (!response.isSuccessful) {
+            val errorBody = response.errorBody()?.string() ?: "Sin detalles"
+            Log.e(TAG, "❌ Error deactivateUser: HTTP ${response.code()} - ${response.message()}")
+            Log.e(TAG, "❌ Error body: $errorBody")
+            error("HTTP ${response.code()}: $errorBody")
+        }
+
+        val deactivatedUser = response.body() ?: error("Empty body")
+        Log.d(TAG, "✅ Usuario desactivado exitosamente: $deactivatedUser")
+        deactivatedUser
+    }
+
+    suspend fun activateUser(id: Int): Result<User> = runCatching {
+        Log.d(TAG, "🔵 Activando usuario ID: $id")
+        val response = api.activateUser(id)
+
+        if (!response.isSuccessful) {
+            val errorBody = response.errorBody()?.string() ?: "Sin detalles"
+            Log.e(TAG, "❌ Error activateUser: HTTP ${response.code()} - ${response.message()}")
+            Log.e(TAG, "❌ Error body: $errorBody")
+            error("HTTP ${response.code()}: $errorBody")
+        }
+
+        val activatedUser = response.body() ?: error("Empty body")
+        Log.d(TAG, "✅ Usuario activado exitosamente: $activatedUser")
+        activatedUser
+    }
+
+    suspend fun getActiveUsers(): Result<List<User>> = runCatching {
+        Log.d(TAG, "🔵 Obteniendo usuarios activos")
+        val response = api.getActiveUsers()
+
+        if (!response.isSuccessful) {
+            val errorBody = response.errorBody()?.string() ?: "Sin detalles"
+            Log.e(TAG, "❌ Error getActiveUsers: HTTP ${response.code()}")
+            error("HTTP ${response.code()}: $errorBody")
+        }
+
+        val users = response.body() ?: error("Empty body")
+        Log.d(TAG, "✅ ${users.size} usuarios activos obtenidos")
+        users
+    }
+
+    suspend fun getInactiveUsers(): Result<List<User>> = runCatching {
+        Log.d(TAG, "🔵 Obteniendo usuarios inactivos")
+        val response = api.getInactiveUsers()
+
+        if (!response.isSuccessful) {
+            val errorBody = response.errorBody()?.string() ?: "Sin detalles"
+            Log.e(TAG, "❌ Error getInactiveUsers: HTTP ${response.code()}")
+            error("HTTP ${response.code()}: $errorBody")
+        }
+
+        val users = response.body() ?: error("Empty body")
+        Log.d(TAG, "✅ ${users.size} usuarios inactivos obtenidos")
+        users
+    }
 }
 

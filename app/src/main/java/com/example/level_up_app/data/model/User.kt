@@ -9,6 +9,7 @@ data class User(
     val email: String,
     val clave: String,
     val isAdmin: Boolean = false,
+    val active: Boolean = true,
     val createdAt: String? = null
 )
 

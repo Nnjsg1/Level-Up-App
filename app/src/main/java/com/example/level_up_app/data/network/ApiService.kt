@@ -24,8 +24,17 @@ interface ApiService {
     @PUT("users/{id}")
     suspend fun updateUser(@Path("id") id: Int, @Body user: User): Response<User>
 
-    @DELETE("users/{id}")
-    suspend fun deleteUser(@Path("id") id: Int): Response<Unit>
+    @PATCH("users/{id}/deactivate")
+    suspend fun deactivateUser(@Path("id") id: Int): Response<User>
+
+    @PATCH("users/{id}/activate")
+    suspend fun activateUser(@Path("id") id: Int): Response<User>
+
+    @GET("users/active")
+    suspend fun getActiveUsers(): Response<List<User>>
+
+    @GET("users/inactive")
+    suspend fun getInactiveUsers(): Response<List<User>>
 
     // PRODUCTOS
     @GET("products")

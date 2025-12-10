@@ -47,10 +47,10 @@ class UserViewModel : ViewModel() {
         }
     }
 
-    fun updateUser(id: Int, name: String, email: String, clave: String, isAdmin: Boolean) {
+    fun updateUser(id: Int, name: String, email: String, clave: String, isAdmin: Boolean, active: Boolean = true) {
         viewModelScope.launch {
             try {
-                repo.updateUser(id, User(id = id, name = name, email = email, clave = clave, isAdmin = isAdmin))
+                repo.updateUser(id, User(id = id, name = name, email = email, clave = clave, isAdmin = isAdmin, active = active))
                     .onSuccess {
                         _snackbarMessage.value = "Usuario actualizado exitosamente"
                         loadUsers()
@@ -64,20 +64,55 @@ class UserViewModel : ViewModel() {
         }
     }
 
-    fun deleteUser(id: Int) {
+    fun deactivateUser(id: Int) {
         viewModelScope.launch {
             try {
-                repo.deleteUser(id)
+                repo.deactivateUser(id)
                     .onSuccess {
-                        _snackbarMessage.value = "Usuario eliminado exitosamente"
+                        _snackbarMessage.value = "Usuario desactivado exitosamente"
                         loadUsers()
                     }
                     .onFailure {
-                        _snackbarMessage.value = "Error al eliminar: ${it.message}"
+                        _snackbarMessage.value = "Error al desactivar: ${it.message}"
                     }
             } catch (e: Exception) {
-                _snackbarMessage.value = "Error al eliminar: ${e.message}"
+                _snackbarMessage.value = "Error al desactivar: ${e.message}"
             }
+        }
+    }
+
+    fun activateUser(id: Int) {
+        viewModelScope.launch {
+            try {
+                repo.activateUser(id)
+                    .onSuccess {
+                        _snackbarMessage.value = "Usuario activado exitosamente"
+                        loadUsers()
+                    }
+                    .onFailure {
+                        _snackbarMessage.value = "Error al activar: ${it.message}"
+                    }
+            } catch (e: Exception) {
+                _snackbarMessage.value = "Error al activar: ${e.message}"
+            }
+        }
+    }
+
+    fun loadActiveUsers() {
+        viewModelScope.launch {
+            _state.value = UserUiState.Loading
+            repo.getActiveUsers()
+                .onSuccess { _state.value = UserUiState.Success(it) }
+                .onFailure { _state.value = UserUiState.Error(it.message ?: "Error desconocido") }
+        }
+    }
+
+    fun loadInactiveUsers() {
+        viewModelScope.launch {
+            _state.value = UserUiState.Loading
+            repo.getInactiveUsers()
+                .onSuccess { _state.value = UserUiState.Success(it) }
+                .onFailure { _state.value = UserUiState.Error(it.message ?: "Error desconocido") }
         }
     }
 

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -63,10 +64,49 @@ fun MainMenu(
     }
 
     Scaffold(
-
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(currentScreen.uppercase()) },
+                navigationIcon = {
+                    // Menú de administrador (solo si es admin)
+                    if (currentUser?.isAdmin == true) {
+                        var showAdminMenu by remember { mutableStateOf(false) }
+
+                        IconButton(onClick = { showAdminMenu = true }) {
+                            Icon(
+                                imageVector = Icons.Filled.Star,
+                                contentDescription = "Panel de Administración"
+                            )
+                        }
+
+                        androidx.compose.material3.DropdownMenu(
+                            expanded = showAdminMenu,
+                            onDismissRequest = { showAdminMenu = false }
+                        ) {
+                            androidx.compose.material3.DropdownMenuItem(
+                                text = { Text("Administrar Productos") },
+                                onClick = {
+                                    showAdminMenu = false
+                                    // TODO: Navegar a administración de productos
+                                }
+                            )
+                            androidx.compose.material3.DropdownMenuItem(
+                                text = { Text("Administrar Usuarios") },
+                                onClick = {
+                                    showAdminMenu = false
+                                    // TODO: Navegar a administración de usuarios
+                                }
+                            )
+                            androidx.compose.material3.DropdownMenuItem(
+                                text = { Text("Administrar Noticias") },
+                                onClick = {
+                                    showAdminMenu = false
+                                    // TODO: Navegar a administración de noticias
+                                }
+                            )
+                        }
+                    }
+                },
                 actions = {
                     IconButton(onClick = { selectedIndex = 4 }) {
                         Icon(

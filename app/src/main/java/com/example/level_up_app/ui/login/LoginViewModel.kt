@@ -118,5 +118,10 @@ class LoginViewModel : ViewModel() {
         }
 
     }
+
+    // Método para limpiar el estado cuando el usuario cierra sesión
+    fun limpiarEstado() {
+        formuLogin.value = FormularioLogin()
+    }
 }
 

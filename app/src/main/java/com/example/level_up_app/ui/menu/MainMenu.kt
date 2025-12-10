@@ -4,11 +4,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.ShoppingCart
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -17,6 +19,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,12 +40,12 @@ import com.example.level_up_app.buys.PayResultScreen
 import com.example.level_up_app.screen.Fondo_2
 import androidx.compose.ui.platform.LocalContext
 import com.example.level_up_app.utils.SessionManager
-import com.example.level_up_app.data.UserSession
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainMenu(
-    onProfile: () -> Unit = {}
+    onProfile: () -> Unit = {},
+    onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
@@ -54,6 +57,8 @@ fun MainMenu(
     var lastPaymentSuccess by remember { mutableStateOf<Boolean?>(null) }
     // Estado para controlar el menú desplegable de administrador
     var showAdminMenu by remember { mutableStateOf(false) }
+    // Estado para controlar el diálogo de cerrar sesión
+    var showLogoutDialog by remember { mutableStateOf(false) }
 
     val currentScreen =
 
@@ -76,7 +81,6 @@ fun MainMenu(
                 navigationIcon = {
                     // Menú de administrador (solo si es admin)
                     if (currentUser?.isAdmin == true) {
-                        var showAdminMenu by remember { mutableStateOf(false) }
 
                         IconButton(onClick = { showAdminMenu = true }) {
                             Icon(
@@ -85,25 +89,25 @@ fun MainMenu(
                             )
                         }
 
-                        androidx.compose.material3.DropdownMenu(
+                        DropdownMenu(
                             expanded = showAdminMenu,
                             onDismissRequest = { showAdminMenu = false }
                         ) {
-                            androidx.compose.material3.DropdownMenuItem(
+                            DropdownMenuItem(
                                 text = { Text("Administrar Productos") },
                                 onClick = {
                                     showAdminMenu = false
                                     // TODO: Navegar a administración de productos
                                 }
                             )
-                            androidx.compose.material3.DropdownMenuItem(
+                            DropdownMenuItem(
                                 text = { Text("Administrar Usuarios") },
                                 onClick = {
                                     showAdminMenu = false
                                     // TODO: Navegar a administración de usuarios
                                 }
                             )
-                            androidx.compose.material3.DropdownMenuItem(
+                            DropdownMenuItem(
                                 text = { Text("Administrar Noticias") },
                                 onClick = {
                                     showAdminMenu = false
@@ -124,6 +128,12 @@ fun MainMenu(
                         Icon(
                             imageVector = if (selectedIndex == 5) Icons.Filled.ShoppingCart else Icons.Outlined.ShoppingCart,
                             contentDescription = "Carrito"
+                        )
+                    }
+                    IconButton(onClick = { showLogoutDialog = true }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                            contentDescription = "Cerrar Sesión"
                         )
                     }
                 }
@@ -200,4 +210,29 @@ fun MainMenu(
             }
          }
      }
+
+    // Diálogo de confirmación de cierre de sesión
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text("Cerrar Sesión") },
+            text = { Text("¿Estás seguro que deseas cerrar sesión?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showLogoutDialog = false
+                        sessionManager.clearSession()
+                        onLogout()
+                    }
+                ) {
+                    Text("Sí, cerrar sesión")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
  }

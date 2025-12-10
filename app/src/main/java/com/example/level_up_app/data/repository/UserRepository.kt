@@ -49,5 +49,35 @@ class UserRepository {
         Log.d(TAG, "✅ Usuario creado exitosamente: $createdUser")
         createdUser
     }
+
+    suspend fun updateUser(id: Int, user: User): Result<User> = runCatching {
+        Log.d(TAG, "🔵 Actualizando usuario ID: $id")
+        val response = api.updateUser(id, user)
+
+        if (!response.isSuccessful) {
+            val errorBody = response.errorBody()?.string() ?: "Sin detalles"
+            Log.e(TAG, "❌ Error updateUser: HTTP ${response.code()} - ${response.message()}")
+            Log.e(TAG, "❌ Error body: $errorBody")
+            error("HTTP ${response.code()}: $errorBody")
+        }
+
+        val updatedUser = response.body() ?: error("Empty body")
+        Log.d(TAG, "✅ Usuario actualizado exitosamente: $updatedUser")
+        updatedUser
+    }
+
+    suspend fun deleteUser(id: Int): Result<Unit> = runCatching {
+        Log.d(TAG, "🔵 Eliminando usuario ID: $id")
+        val response = api.deleteUser(id)
+
+        if (!response.isSuccessful) {
+            val errorBody = response.errorBody()?.string() ?: "Sin detalles"
+            Log.e(TAG, "❌ Error deleteUser: HTTP ${response.code()} - ${response.message()}")
+            Log.e(TAG, "❌ Error body: $errorBody")
+            error("HTTP ${response.code()}: $errorBody")
+        }
+
+        Log.d(TAG, "✅ Usuario eliminado exitosamente")
+    }
 }
 

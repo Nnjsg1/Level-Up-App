@@ -42,7 +42,7 @@ fun MainMenu(
 ) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
-    val currentUser = remember { sessionManager.getUser() }
+    var currentUser by remember { mutableStateOf(sessionManager.getUser()) }
 
     var selectedIndex by remember { mutableStateOf(0) }
     var isEditing by remember { mutableStateOf(false) }
@@ -127,7 +127,14 @@ fun MainMenu(
                 )
                 3 -> {
                     if (isEditing) {
-                        ProfileEditScreen(onSave = { _, _, _ -> /* no-op for now */ }, onBack = { isEditing = false })
+                        ProfileEditScreen(
+                            onSave = { _, _, _ -> /* no-op for now */ },
+                            onBack = {
+                                isEditing = false
+                                // Recargar los datos del usuario desde la sesión actualizada
+                                currentUser = sessionManager.getUser()
+                            }
+                        )
                     } else {
                         ProfileScreen(
                             name = currentUser?.name ?: "",

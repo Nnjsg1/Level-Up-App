@@ -106,5 +106,56 @@ class UserRepository {
             null
         }
     }
+
+    /**
+     * Actualiza los datos de un usuario (nombre y contraseña)
+     */
+    suspend fun updateUser(userId: Long, name: String, clave: String): LoginResponse {
+        return try {
+            // Primero obtener el usuario actual para mantener los demás campos
+            val currentUserResponse = apiService.getUserById(userId.toString())
+
+            if (!currentUserResponse.isSuccessful || currentUserResponse.body() == null) {
+                return LoginResponse(success = false, message = "No se pudo obtener datos del usuario")
+            }
+
+            val currentUser = currentUserResponse.body()!!
+
+            // Crear el objeto User actualizado con los nuevos valores
+            val updatedUser = currentUser.copy(
+                name = name,
+                clave = clave
+            )
+
+            val response = apiService.updateUser(userId.toString(), updatedUser)
+
+            if (response.isSuccessful) {
+                val user = response.body()
+                if (user != null) {
+                    LoginResponse(
+                        success = true,
+                        message = "Usuario actualizado correctamente",
+                        user = user
+                    )
+                } else {
+                    LoginResponse(success = false, message = "Respuesta vacía del servidor")
+                }
+            } else {
+                val errorMsg = when (response.code()) {
+                    404 -> "Usuario no encontrado"
+                    500 -> "Error en el servidor"
+                    else -> "Error al actualizar (${response.code()})"
+                }
+                Log.e("UserRepository", "Error update: ${response.code()}")
+                LoginResponse(success = false, message = errorMsg)
+            }
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Exception en update: ${e.message}", e)
+            LoginResponse(
+                success = false,
+                message = "Error de conexión: ${e.localizedMessage}"
+            )
+        }
+    }
 }
 

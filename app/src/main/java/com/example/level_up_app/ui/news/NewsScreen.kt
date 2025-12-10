@@ -22,38 +22,83 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import com.example.level_up_app.data.News
-import com.example.level_up_app.data.NewsRepository
+import com.example.level_up_app.utils.ImageUtils
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.media3.common.util.UnstableApi
 
+@UnstableApi
 @Composable
-fun NewsScreen() {
+fun NewsScreen(
+    viewModel: NewsViewModel = remember { NewsViewModel() }
+) {
     var selectedNews by remember { mutableStateOf<News?>(null) }
-    val newsList = NewsRepository.newsList
+    val uiState by viewModel.uiState.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (newsList.isEmpty()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "No hay noticias disponibles",
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(newsList) { news ->
-                    NewsCompactCard(
-                        news = news,
-                        onClick = { selectedNews = news }
-                    )
+        Column(modifier = Modifier.fillMaxSize()) {
+            when {
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+                uiState.error != null -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = uiState.error ?: "Error desconocido",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = { viewModel.loadNews() }) {
+                            Text("Reintentar")
+                        }
+                    }
+                }
+                uiState.newsList.isEmpty() -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "No hay noticias disponibles",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = { viewModel.loadNews() }) {
+                            Text("Recargar")
+                        }
+                    }
+                }
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(uiState.newsList) { news ->
+                            NewsCompactCard(
+                                news = news,
+                                onClick = {
+                                    selectedNews = news
+                                    viewModel.incrementViews(news.id)
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -83,10 +128,16 @@ fun NewsCompactCard(
         Row(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Imagen de la noticia
-            if (news.imageUrl.isNotEmpty()) {
+            // Usar thumbnail si existe, si no usar image
+            val displayImage = if (news.thumbnail.isNotEmpty()) {
+                news.thumbnail
+            } else {
+                news.image
+            }
+
+            if (displayImage.isNotEmpty()) {
                 AsyncImage(
-                    model = news.imageUrl,
+                    model = ImageUtils.getImageUrl(displayImage),
                     contentDescription = news.title,
                     modifier = Modifier
                         .width(120.dp)
@@ -127,7 +178,7 @@ fun NewsCompactCard(
                         }
 
                         Text(
-                            text = news.date,
+                            text = news.createdAt.take(10), // Solo la fecha YYYY-MM-DD
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -158,6 +209,7 @@ fun NewsCompactCard(
     }
 }
 
+@UnstableApi
 @Composable
 fun NewsDetailDialog(
     news: News,
@@ -212,23 +264,32 @@ fun NewsDetailDialog(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     // Video o Imagen de la noticia
-                    if (news.videoPath.isNotEmpty()) {
-                        // Mostrar video si existe
-                        VideoPlayer(
-                            videoResourceName = news.videoPath,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    } else if (news.imageUrl.isNotEmpty()) {
-                        // Mostrar imagen si no hay video
-                        AsyncImage(
-                            model = news.imageUrl,
-                            contentDescription = news.title,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(250.dp)
-                                .clip(RoundedCornerShape(12.dp)),
-                            contentScale = ContentScale.Crop
-                        )
+                    if (news.image.isNotEmpty()) {
+                        // Detectar si es un video por la extensión
+                        val isVideo = news.image.endsWith(".mp4", ignoreCase = true) ||
+                                news.image.endsWith(".webm", ignoreCase = true) ||
+                                news.image.endsWith(".mkv", ignoreCase = true) ||
+                                news.image.endsWith(".avi", ignoreCase = true)
+
+                        if (isVideo) {
+                            // Mostrar video player
+                            VideoPlayer(
+                                videoResourceName = ImageUtils.getImageUrl(news.image),
+                                modifier = Modifier.fillMaxWidth(),
+                                isUrl = true
+                            )
+                        } else {
+                            // Mostrar imagen
+                            AsyncImage(
+                                model = ImageUtils.getImageUrl(news.image),
+                                contentDescription = news.title,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(250.dp)
+                                    .clip(RoundedCornerShape(12.dp)),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
                     }
 
                     // Categoría y fecha
@@ -253,7 +314,7 @@ fun NewsDetailDialog(
                         }
 
                         Text(
-                            text = news.date,
+                            text = news.createdAt.take(10), // Solo la fecha YYYY-MM-DD
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Medium

@@ -18,6 +18,9 @@ interface ApiService {
     @POST("users")
     suspend fun createUser(@Body user: User): Response<User>
 
+    @POST("users")
+    suspend fun createUserWithRequest(@Body request: CreateUserRequest): Response<User>
+
     @PUT("users/{id}")
     suspend fun updateUser(@Path("id") id: Int, @Body user: User): Response<User>
 

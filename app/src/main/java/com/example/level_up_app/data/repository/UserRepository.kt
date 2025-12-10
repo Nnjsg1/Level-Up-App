@@ -1,21 +1,53 @@
 package com.example.level_up_app.data.repository
 
+import android.util.Log
+import com.example.level_up_app.data.model.CreateUserRequest
 import com.example.level_up_app.data.model.User
 import com.example.level_up_app.data.network.RetrofitClient
 
 class UserRepository {
     private val api = RetrofitClient.apiService
+    private val TAG = "UserRepository"
 
     suspend fun getAllUsers(): Result<List<User>> = runCatching {
         val response = api.getAllUsers()
-        if (!response.isSuccessful) error("HTTP ${response.code()}")
+        if (!response.isSuccessful) {
+            Log.e(TAG, "Error getAllUsers: HTTP ${response.code()} - ${response.message()}")
+            error("HTTP ${response.code()}: ${response.message()}")
+        }
         response.body() ?: error("Empty body")
     }
 
     suspend fun createUser(user: User): Result<User> = runCatching {
-        val response = api.createUser(user)
-        if (!response.isSuccessful) error("HTTP ${response.code()}")
-        response.body() ?: error("Empty body")
+        Log.d(TAG, "🔵 Enviando POST a http://localhost:8080/api/users")
+        Log.d(TAG, "🔵 Usuario original: $user")
+
+        // Crear el DTO con solo los campos requeridos
+        val request = CreateUserRequest(
+            name = user.name,
+            email = user.email,
+            clave = user.clave
+        )
+
+        Log.d(TAG, "🔵 Request DTO: $request")
+        Log.d(TAG, "🔵 JSON exacto a enviar: {\"name\":\"${request.name}\",\"email\":\"${request.email}\",\"clave\":\"${request.clave}\"}")
+
+        val response = api.createUserWithRequest(request)
+
+        Log.d(TAG, "🔵 Respuesta recibida - Status: ${response.code()}")
+
+        if (!response.isSuccessful) {
+            // Leer errorBody una sola vez
+            val errorBody = response.errorBody()?.string() ?: "Sin detalles"
+            Log.e(TAG, "❌ Error createUser: HTTP ${response.code()} - ${response.message()}")
+            Log.e(TAG, "❌ Error body completo: $errorBody")
+            Log.e(TAG, "❌ Headers de respuesta: ${response.headers()}")
+            error("HTTP ${response.code()}: $errorBody")
+        }
+
+        val createdUser = response.body() ?: error("Empty body")
+        Log.d(TAG, "✅ Usuario creado exitosamente: $createdUser")
+        createdUser
     }
 }
 

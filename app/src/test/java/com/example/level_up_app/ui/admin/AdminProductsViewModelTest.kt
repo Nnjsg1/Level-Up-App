@@ -140,67 +140,68 @@ class AdminProductsViewModelTest {
     }
 
     @Test
-    fun `eliminar producto debe removerlo y mostrar mensaje de exito`() = runTest {
+    fun `descontinuar producto debe marcarlo y mostrar mensaje de exito`() = runTest {
         // Dado
         val productId = 1L
-        coEvery { productRepository.deleteProduct(productId) } returns true
+        val discontinuedProduct = mockProductsList[0].copy(discontinued = true)
+        coEvery { productRepository.discontinueProduct(productId) } returns discontinuedProduct
         coEvery { productRepository.fetchProducts() } returns emptyList()
 
         // Cuando
-        viewModel.deleteProduct(productId)
+        viewModel.discontinueProduct(productId)
         advanceUntilIdle()
 
         // Entonces
         val state = viewModel.uiState.value
         assertFalse(state.isLoading)
-        assertEquals("Producto eliminado correctamente", state.successMessage)
-        assertFalse(state.showDeleteDialog)
-        assertNull(state.productToDelete)
-        coVerify { productRepository.deleteProduct(productId) }
+        assertEquals("Producto descontinuado. Se eliminará automáticamente de carritos y favoritos", state.successMessage)
+        assertFalse(state.showDiscontinueDialog)
+        assertNull(state.productToDiscontinue)
+        coVerify { productRepository.discontinueProduct(productId) }
     }
 
     @Test
-    fun `eliminar producto debe mostrar error cuando falla la eliminacion`() = runTest {
+    fun `descontinuar producto debe mostrar error cuando falla`() = runTest {
         // Dado
         val productId = 1L
-        coEvery { productRepository.deleteProduct(productId) } returns false
+        coEvery { productRepository.discontinueProduct(productId) } returns null
 
         // Cuando
-        viewModel.deleteProduct(productId)
+        viewModel.discontinueProduct(productId)
         advanceUntilIdle()
 
         // Entonces
         val state = viewModel.uiState.value
         assertFalse(state.isLoading)
-        assertEquals("Error al eliminar el producto", state.error)
+        assertEquals("Error al descontinuar el producto", state.error)
     }
 
     @Test
-    fun `mostrar dialogo de confirmacion debe actualizar estado correctamente`() {
+    fun `mostrar dialogo de descontinuar debe actualizar estado correctamente`() {
         // Dado
         val product = mockProductsList[0]
 
         // Cuando
-        viewModel.showDeleteDialog(product)
+        viewModel.showDiscontinueDialog(product)
 
         // Entonces
         val state = viewModel.uiState.value
-        assertTrue(state.showDeleteDialog)
-        assertEquals(product, state.productToDelete)
+        assertTrue(state.showDiscontinueDialog)
+        assertEquals(product, state.productToDiscontinue)
     }
 
     @Test
-    fun `ocultar dialogo de confirmacion debe limpiar el estado`() {
+    fun `ocultar dialogo de descontinuar debe limpiar el estado`() {
         // Dado
-        viewModel.showDeleteDialog(mockProductsList[0])
+        viewModel.showDiscontinueDialog(mockProductsList[0])
 
         // Cuando
-        viewModel.hideDeleteDialog()
+        viewModel.hideDiscontinueDialog()
 
         // Entonces
         val state = viewModel.uiState.value
-        assertFalse(state.showDeleteDialog)
-        assertNull(state.productToDelete)
+        assertFalse(state.showDiscontinueDialog)
+        assertNull(state.productToDiscontinue)
     }
 
     @Test

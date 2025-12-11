@@ -57,14 +57,14 @@ class ProductRepositoryTest {
     }
 
     @Test
-    fun `fetchProducts should return products list on success`() = runTest {
-        // Given
+    fun `obtener productos debe retornar lista de productos exitosamente`() = runTest {
+        // Dado
         coEvery { apiService.getProducts() } returns Response.success(mockProducts)
 
-        // When
+        // Cuando
         val result = repository.fetchProducts()
 
-        // Then
+        // Entonces
         assertNotNull(result)
         assertEquals(2, result?.size)
         assertEquals("Teclado Mecánico", result?.get(0)?.name)
@@ -72,44 +72,44 @@ class ProductRepositoryTest {
     }
 
     @Test
-    fun `fetchProducts should return empty list on error response`() = runTest {
-        // Given
+    fun `obtener productos debe retornar lista vacia cuando hay error de respuesta`() = runTest {
+        // Dado
         coEvery { apiService.getProducts() } returns Response.error(
             404,
             "Not found".toResponseBody()
         )
 
-        // When
+        // Cuando
         val result = repository.fetchProducts()
 
-        // Then
+        // Entonces
         assertNotNull(result)
         assertTrue(result?.isEmpty() == true)
     }
 
     @Test
-    fun `fetchProducts should return null on exception`() = runTest {
-        // Given
+    fun `obtener productos debe retornar null cuando hay excepcion`() = runTest {
+        // Dado
         coEvery { apiService.getProducts() } throws Exception("Network error")
 
-        // When
+        // Cuando
         val result = repository.fetchProducts()
 
-        // Then
+        // Entonces
         assertNull(result)
     }
 
     @Test
-    fun `getProductById should return product on success`() = runTest {
-        // Given
+    fun `obtener producto por id debe retornar el producto exitosamente`() = runTest {
+        // Dado
         val productId = 1L
         val expectedProduct = mockProducts[0]
         coEvery { apiService.getProductById(productId) } returns Response.success(expectedProduct)
 
-        // When
+        // Cuando
         val result = repository.getProductById(productId)
 
-        // Then
+        // Entonces
         assertNotNull(result)
         assertEquals(productId, result?.id)
         assertEquals("Teclado Mecánico", result?.name)
@@ -117,108 +117,108 @@ class ProductRepositoryTest {
     }
 
     @Test
-    fun `createProduct should return created product on success`() = runTest {
-        // Given
+    fun `crear producto debe retornar el producto creado exitosamente`() = runTest {
+        // Dado
         val newProduct = mockProducts[0]
         coEvery { apiService.createProduct(newProduct) } returns Response.success(newProduct)
 
-        // When
+        // Cuando
         val result = repository.createProduct(newProduct)
 
-        // Then
+        // Entonces
         assertNotNull(result)
         assertEquals(newProduct.name, result?.name)
         coVerify { apiService.createProduct(newProduct) }
     }
 
     @Test
-    fun `createProduct should return null on error`() = runTest {
-        // Given
+    fun `crear producto debe retornar null cuando hay error`() = runTest {
+        // Dado
         val newProduct = mockProducts[0]
         coEvery { apiService.createProduct(newProduct) } returns Response.error(
             400,
             "Bad request".toResponseBody()
         )
 
-        // When
+        // Cuando
         val result = repository.createProduct(newProduct)
 
-        // Then
+        // Entonces
         assertNull(result)
     }
 
     @Test
-    fun `updateProduct should return updated product on success`() = runTest {
-        // Given
+    fun `actualizar producto debe retornar el producto actualizado exitosamente`() = runTest {
+        // Dado
         val productId = 1L
         val updatedProduct = mockProducts[0].copy(name = "Teclado Actualizado")
         coEvery { apiService.updateProduct(productId, updatedProduct) } returns Response.success(updatedProduct)
 
-        // When
+        // Cuando
         val result = repository.updateProduct(productId, updatedProduct)
 
-        // Then
+        // Entonces
         assertNotNull(result)
         assertEquals("Teclado Actualizado", result?.name)
         coVerify { apiService.updateProduct(productId, updatedProduct) }
     }
 
     @Test
-    fun `deleteProduct should return true on successful deletion`() = runTest {
-        // Given
+    fun `eliminar producto debe retornar verdadero cuando se elimina exitosamente`() = runTest {
+        // Dado
         val productId = 1L
         coEvery { apiService.deleteProduct(productId) } returns Response.success(Unit)
 
-        // When
+        // Cuando
         val result = repository.deleteProduct(productId)
 
-        // Then
+        // Entonces
         assertTrue(result)
         coVerify { apiService.deleteProduct(productId) }
     }
 
     @Test
-    fun `deleteProduct should return false on error`() = runTest {
-        // Given
+    fun `eliminar producto debe retornar falso cuando hay error`() = runTest {
+        // Dado
         val productId = 1L
         coEvery { apiService.deleteProduct(productId) } returns Response.error(
             500,
             "Server error".toResponseBody()
         )
 
-        // When
+        // Cuando
         val result = repository.deleteProduct(productId)
 
-        // Then
+        // Entonces
         assertFalse(result)
     }
 
     @Test
-    fun `deleteProduct should return false on exception`() = runTest {
-        // Given
+    fun `eliminar producto debe retornar falso cuando hay excepcion`() = runTest {
+        // Dado
         val productId = 1L
         coEvery { apiService.deleteProduct(productId) } throws Exception("Network error")
 
-        // When
+        // Cuando
         val result = repository.deleteProduct(productId)
 
-        // Then
+        // Entonces
         assertFalse(result)
     }
 
     @Test
-    fun `fetchCategories should return categories list on success`() = runTest {
-        // Given
+    fun `obtener categorias debe retornar lista de categorias exitosamente`() = runTest {
+        // Dado
         val mockCategories = listOf(
             Category(id = 1, name = "Gaming"),
             Category(id = 2, name = "Oficina")
         )
         coEvery { apiService.getCategories() } returns Response.success(mockCategories)
 
-        // When
+        // Cuando
         val result = repository.fetchCategories()
 
-        // Then
+        // Entonces
         assertNotNull(result)
         assertEquals(2, result?.size)
         assertEquals("Gaming", result?.get(0)?.name)

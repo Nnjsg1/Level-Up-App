@@ -90,15 +90,15 @@ class AdminProductsViewModelTest {
     }
 
     @Test
-    fun `loadAllProducts should update state with products list on success`() = runTest {
-        // Given
+    fun `cargar productos debe actualizar estado con lista de productos exitosamente`() = runTest {
+        // Dado
         coEvery { productRepository.fetchProducts() } returns mockProductsList
 
-        // When
+        // Cuando
         viewModel.loadAllProducts()
         advanceUntilIdle()
 
-        // Then
+        // Entonces
         val state = viewModel.uiState.value
         assertFalse(state.isLoading)
         assertEquals(2, state.productsList.size)
@@ -108,15 +108,15 @@ class AdminProductsViewModelTest {
     }
 
     @Test
-    fun `loadAllProducts should show error when repository returns null`() = runTest {
-        // Given
+    fun `cargar productos debe mostrar error cuando el repositorio retorna null`() = runTest {
+        // Dado
         coEvery { productRepository.fetchProducts() } returns null
 
-        // When
+        // Cuando
         viewModel.loadAllProducts()
         advanceUntilIdle()
 
-        // Then
+        // Entonces
         val state = viewModel.uiState.value
         assertFalse(state.isLoading)
         assertTrue(state.productsList.isEmpty())
@@ -124,15 +124,15 @@ class AdminProductsViewModelTest {
     }
 
     @Test
-    fun `loadCategories should update state with categories`() = runTest {
-        // Given
+    fun `cargar categorias debe actualizar estado con las categorias`() = runTest {
+        // Dado
         coEvery { productRepository.fetchCategories() } returns mockCategories
 
-        // When
+        // Cuando
         viewModel.loadCategories()
         advanceUntilIdle()
 
-        // Then
+        // Entonces
         val state = viewModel.uiState.value
         assertEquals(3, state.categories.size)
         assertEquals("Gaming", state.categories[0].name)
@@ -140,17 +140,17 @@ class AdminProductsViewModelTest {
     }
 
     @Test
-    fun `deleteProduct should remove product and show success message`() = runTest {
-        // Given
+    fun `eliminar producto debe removerlo y mostrar mensaje de exito`() = runTest {
+        // Dado
         val productId = 1L
         coEvery { productRepository.deleteProduct(productId) } returns true
         coEvery { productRepository.fetchProducts() } returns emptyList()
 
-        // When
+        // Cuando
         viewModel.deleteProduct(productId)
         advanceUntilIdle()
 
-        // Then
+        // Entonces
         val state = viewModel.uiState.value
         assertFalse(state.isLoading)
         assertEquals("Producto eliminado correctamente", state.successMessage)
@@ -160,62 +160,62 @@ class AdminProductsViewModelTest {
     }
 
     @Test
-    fun `deleteProduct should show error when deletion fails`() = runTest {
-        // Given
+    fun `eliminar producto debe mostrar error cuando falla la eliminacion`() = runTest {
+        // Dado
         val productId = 1L
         coEvery { productRepository.deleteProduct(productId) } returns false
 
-        // When
+        // Cuando
         viewModel.deleteProduct(productId)
         advanceUntilIdle()
 
-        // Then
+        // Entonces
         val state = viewModel.uiState.value
         assertFalse(state.isLoading)
         assertEquals("Error al eliminar el producto", state.error)
     }
 
     @Test
-    fun `showDeleteDialog should update state correctly`() {
-        // Given
+    fun `mostrar dialogo de confirmacion debe actualizar estado correctamente`() {
+        // Dado
         val product = mockProductsList[0]
 
-        // When
+        // Cuando
         viewModel.showDeleteDialog(product)
 
-        // Then
+        // Entonces
         val state = viewModel.uiState.value
         assertTrue(state.showDeleteDialog)
         assertEquals(product, state.productToDelete)
     }
 
     @Test
-    fun `hideDeleteDialog should clear dialog state`() {
-        // Given
+    fun `ocultar dialogo de confirmacion debe limpiar el estado`() {
+        // Dado
         viewModel.showDeleteDialog(mockProductsList[0])
 
-        // When
+        // Cuando
         viewModel.hideDeleteDialog()
 
-        // Then
+        // Entonces
         val state = viewModel.uiState.value
         assertFalse(state.showDeleteDialog)
         assertNull(state.productToDelete)
     }
 
     @Test
-    fun `createProduct should create product and call onSuccess`() = runTest {
-        // Given
+    fun `crear producto debe crearlo y llamar al callback de exito`() = runTest {
+        // Dado
         val newProduct = mockProductsList[0]
         var onSuccessCalled = false
         coEvery { productRepository.createProduct(any()) } returns newProduct
         coEvery { productRepository.fetchProducts() } returns listOf(newProduct)
 
-        // When
+        // Cuando
         viewModel.createProduct(newProduct) { onSuccessCalled = true }
         advanceUntilIdle()
 
-        // Then
+        // Entonces
         assertTrue(onSuccessCalled)
         val state = viewModel.uiState.value
         assertEquals("Producto creado correctamente", state.successMessage)
@@ -223,36 +223,36 @@ class AdminProductsViewModelTest {
     }
 
     @Test
-    fun `createProduct should show error when creation fails`() = runTest {
-        // Given
+    fun `crear producto debe mostrar error cuando falla la creacion`() = runTest {
+        // Dado
         val newProduct = mockProductsList[0]
         var onSuccessCalled = false
         coEvery { productRepository.createProduct(any()) } returns null
 
-        // When
+        // Cuando
         viewModel.createProduct(newProduct) { onSuccessCalled = true }
         advanceUntilIdle()
 
-        // Then
+        // Entonces
         assertFalse(onSuccessCalled)
         val state = viewModel.uiState.value
         assertEquals("Error al crear el producto", state.error)
     }
 
     @Test
-    fun `updateProduct should update product and call onSuccess`() = runTest {
-        // Given
+    fun `actualizar producto debe actualizarlo y llamar al callback de exito`() = runTest {
+        // Dado
         val productId = 1L
         val updatedProduct = mockProductsList[0].copy(name = "Teclado Actualizado")
         var onSuccessCalled = false
         coEvery { productRepository.updateProduct(productId, any()) } returns updatedProduct
         coEvery { productRepository.fetchProducts() } returns listOf(updatedProduct)
 
-        // When
+        // Cuando
         viewModel.updateProduct(productId, updatedProduct) { onSuccessCalled = true }
         advanceUntilIdle()
 
-        // Then
+        // Entonces
         assertTrue(onSuccessCalled)
         val state = viewModel.uiState.value
         assertEquals("Producto actualizado correctamente", state.successMessage)
@@ -260,8 +260,8 @@ class AdminProductsViewModelTest {
     }
 
     @Test
-    fun `clearMessages should clear success and error messages`() {
-        // Given
+    fun `limpiar mensajes debe eliminar mensajes de exito y error`() {
+        // Dado
         val field = AdminProductsViewModel::class.java.getDeclaredField("_uiState")
         field.isAccessible = true
         @Suppress("UNCHECKED_CAST")
@@ -271,10 +271,10 @@ class AdminProductsViewModelTest {
             error = "Error"
         )
 
-        // When
+        // Cuando
         viewModel.clearMessages()
 
-        // Then
+        // Entonces
         val state = viewModel.uiState.value
         assertNull(state.successMessage)
         assertNull(state.error)

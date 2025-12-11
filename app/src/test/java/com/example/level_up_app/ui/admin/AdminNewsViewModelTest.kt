@@ -88,15 +88,15 @@ class AdminNewsViewModelTest {
     }
 
     @Test
-    fun `loadAllNews should update state with news list on success`() = runTest {
-        // Given
+    fun `cargar noticias debe actualizar estado con lista de noticias exitosamente`() = runTest {
+        // Dado
         coEvery { newsRepository.fetchAllNews() } returns mockNewsList
 
-        // When
+        // Cuando
         viewModel.loadAllNews()
         advanceUntilIdle()
 
-        // Then
+        // Entonces
         val state = viewModel.uiState.value
         assertFalse(state.isLoading)
         assertEquals(2, state.newsList.size)
@@ -105,15 +105,15 @@ class AdminNewsViewModelTest {
     }
 
     @Test
-    fun `loadAllNews should update state with error on failure`() = runTest {
-        // Given
+    fun `cargar noticias debe mostrar error cuando falla`() = runTest {
+        // Dado
         coEvery { newsRepository.fetchAllNews() } returns null
 
-        // When
+        // Cuando
         viewModel.loadAllNews()
         advanceUntilIdle()
 
-        // Then
+        // Entonces
         val state = viewModel.uiState.value
         assertFalse(state.isLoading)
         assertTrue(state.newsList.isEmpty())
@@ -121,17 +121,17 @@ class AdminNewsViewModelTest {
     }
 
     @Test
-    fun `deleteNews should remove news and show success message`() = runTest {
-        // Given
+    fun `eliminar noticia debe removerla y mostrar mensaje de exito`() = runTest {
+        // Dado
         val newsId = 1L
         coEvery { newsRepository.deleteNews(newsId) } returns true
         coEvery { newsRepository.fetchAllNews() } returns emptyList()
 
-        // When
+        // Cuando
         viewModel.deleteNews(newsId)
         advanceUntilIdle()
 
-        // Then
+        // Entonces
         val state = viewModel.uiState.value
         assertFalse(state.isLoading)
         assertEquals("Noticia eliminada correctamente", state.successMessage)
@@ -141,46 +141,46 @@ class AdminNewsViewModelTest {
     }
 
     @Test
-    fun `showDeleteDialog should update state correctly`() {
-        // Given
+    fun `mostrar dialogo de confirmacion debe actualizar estado correctamente`() {
+        // Dado
         val news = mockNewsList[0]
 
-        // When
+        // Cuando
         viewModel.showDeleteDialog(news)
 
-        // Then
+        // Entonces
         val state = viewModel.uiState.value
         assertTrue(state.showDeleteDialog)
         assertEquals(news, state.newsToDelete)
     }
 
     @Test
-    fun `hideDeleteDialog should clear dialog state`() {
-        // Given
+    fun `ocultar dialogo de confirmacion debe limpiar el estado`() {
+        // Dado
         viewModel.showDeleteDialog(mockNewsList[0])
 
-        // When
+        // Cuando
         viewModel.hideDeleteDialog()
 
-        // Then
+        // Entonces
         val state = viewModel.uiState.value
         assertFalse(state.showDeleteDialog)
         assertNull(state.newsToDelete)
     }
 
     @Test
-    fun `createNews should create news and call onSuccess`() = runTest {
-        // Given
+    fun `crear noticia debe crearla y llamar al callback de exito`() = runTest {
+        // Dado
         val newNews = mockNewsList[0]
         var onSuccessCalled = false
         coEvery { newsRepository.createNews(any()) } returns newNews
         coEvery { newsRepository.fetchAllNews() } returns listOf(newNews)
 
-        // When
+        // Cuando
         viewModel.createNews(newNews) { onSuccessCalled = true }
         advanceUntilIdle()
 
-        // Then
+        // Entonces
         assertTrue(onSuccessCalled)
         val state = viewModel.uiState.value
         assertEquals("Noticia creada correctamente", state.successMessage)
@@ -188,19 +188,19 @@ class AdminNewsViewModelTest {
     }
 
     @Test
-    fun `updateNews should update news and call onSuccess`() = runTest {
-        // Given
+    fun `actualizar noticia debe actualizarla y llamar al callback de exito`() = runTest {
+        // Dado
         val newsId = 1L
         val updatedNews = mockNewsList[0].copy(title = "Título actualizado")
         var onSuccessCalled = false
         coEvery { newsRepository.updateNews(newsId, any()) } returns updatedNews
         coEvery { newsRepository.fetchAllNews() } returns listOf(updatedNews)
 
-        // When
+        // Cuando
         viewModel.updateNews(newsId, updatedNews) { onSuccessCalled = true }
         advanceUntilIdle()
 
-        // Then
+        // Entonces
         assertTrue(onSuccessCalled)
         val state = viewModel.uiState.value
         assertEquals("Noticia actualizada correctamente", state.successMessage)
@@ -208,8 +208,8 @@ class AdminNewsViewModelTest {
     }
 
     @Test
-    fun `clearMessages should clear success and error messages`() {
-        // Given
+    fun `limpiar mensajes debe eliminar mensajes de exito y error`() {
+        // Dado
         // Simular que hay mensajes
         val field = AdminNewsViewModel::class.java.getDeclaredField("_uiState")
         field.isAccessible = true
@@ -220,10 +220,10 @@ class AdminNewsViewModelTest {
             error = "Error"
         )
 
-        // When
+        // Cuando
         viewModel.clearMessages()
 
-        // Then
+        // Entonces
         val state = viewModel.uiState.value
         assertNull(state.successMessage)
         assertNull(state.error)

@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import com.example.level_up_app.data.Product
 import com.example.level_up_app.data.CartRepository
 import com.example.level_up_app.ui.favorites.FavoritesViewModel
+import com.example.level_up_app.ui.cart.CartViewModel
 import com.example.level_up_app.utils.SessionManager
 import com.example.level_up_app.utils.ImageUtils
 import kotlinx.coroutines.launch
@@ -38,7 +39,8 @@ fun formatPrice(price: Double): String {
 @Composable
 fun CatalogScreen(
     viewModel: CatalogViewModel = remember { CatalogViewModel() },
-    favoritesViewModel: FavoritesViewModel = remember { FavoritesViewModel() }
+    favoritesViewModel: FavoritesViewModel = remember { FavoritesViewModel() },
+    cartViewModel: CartViewModel = remember { CartViewModel() }
 ) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
@@ -51,6 +53,7 @@ fun CatalogScreen(
     LaunchedEffect(currentUser?.id) {
         currentUser?.id?.let { userId ->
             favoritesViewModel.loadFavorites(userId)
+            cartViewModel.loadCart(userId)
         }
     }
 
@@ -130,7 +133,8 @@ fun CatalogScreen(
         ProductDetailDialog(
             product = product,
             onDismiss = { selectedProduct = null },
-            favoritesViewModel = favoritesViewModel
+            favoritesViewModel = favoritesViewModel,
+            cartViewModel = cartViewModel
         )
     }
 }
@@ -221,7 +225,8 @@ fun ProductCard(
 fun ProductDetailDialog(
     product: Product,
     onDismiss: () -> Unit,
-    favoritesViewModel: FavoritesViewModel = remember { FavoritesViewModel() }
+    favoritesViewModel: FavoritesViewModel = remember { FavoritesViewModel() },
+    cartViewModel: CartViewModel = remember { CartViewModel() }
 ) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
@@ -442,7 +447,9 @@ fun ProductDetailDialog(
                         // Botón de Añadir al Carrito
                         Button(
                             onClick = {
-                                CartRepository.addToCart(product)
+                                currentUser?.id?.let { userId ->
+                                    cartViewModel.addToCart(userId, product)
+                                }
                                 scope.launch {
                                     snackbarHostState.showSnackbar(
                                         message = "✓ Producto agregado al carrito",

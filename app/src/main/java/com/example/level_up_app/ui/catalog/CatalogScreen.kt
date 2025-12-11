@@ -21,10 +21,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
+import androidx.compose.ui.platform.LocalContext
 import com.example.level_up_app.data.Product
-import com.example.level_up_app.data.ProductRepository
 import com.example.level_up_app.data.CartRepository
-import com.example.level_up_app.data.FavoritesRepository
+import com.example.level_up_app.ui.favorites.FavoritesViewModel
+import com.example.level_up_app.utils.SessionManager
+import com.example.level_up_app.utils.ImageUtils
 import kotlinx.coroutines.launch
 
 // Función para formatear precios en formato chileno
@@ -34,35 +36,91 @@ fun formatPrice(price: Double): String {
 }
 
 @Composable
-fun CatalogScreen() {
+fun CatalogScreen(
+    viewModel: CatalogViewModel = remember { CatalogViewModel() },
+    favoritesViewModel: FavoritesViewModel = remember { FavoritesViewModel() }
+) {
+    val context = LocalContext.current
+    val sessionManager = remember { SessionManager(context) }
+    val currentUser = sessionManager.getUser()
+
     var selectedProduct by remember { mutableStateOf<Product?>(null) }
-    val products = ProductRepository.products
+    val uiState by viewModel.uiState.collectAsState()
+
+    // Cargar favoritos al inicio
+    LaunchedEffect(currentUser?.id) {
+        currentUser?.id?.let { userId ->
+            favoritesViewModel.loadFavorites(userId)
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (products.isEmpty()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "No hay productos en el catálogo",
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(products) { product ->
-                    ProductCard(
-                        product = product,
-                        onClick = { selectedProduct = product }
-                    )
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Barra de búsqueda (opcional, puedes agregarla después)
+
+            when {
+                uiState.isLoading -> {
+                    // Mostrar indicador de carga
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+                uiState.error != null -> {
+                    // Mostrar error
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = uiState.error ?: "Error desconocido",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = { viewModel.loadProducts() }) {
+                            Text("Reintentar")
+                        }
+                    }
+                }
+                uiState.products.isEmpty() -> {
+                    // No hay productos
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "No hay productos en el catálogo",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = { viewModel.loadProducts() }) {
+                            Text("Recargar")
+                        }
+                    }
+                }
+                else -> {
+                    // Mostrar productos
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(uiState.products) { product ->
+                            ProductCard(
+                                product = product,
+                                onClick = { selectedProduct = product }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -71,7 +129,8 @@ fun CatalogScreen() {
     selectedProduct?.let { product ->
         ProductDetailDialog(
             product = product,
-            onDismiss = { selectedProduct = null }
+            onDismiss = { selectedProduct = null },
+            favoritesViewModel = favoritesViewModel
         )
     }
 }
@@ -94,7 +153,7 @@ fun ProductCard(
             // Imagen del producto
             if (product.imageUrl.isNotEmpty()) {
                 AsyncImage(
-                    model = product.imageUrl,
+                    model = ImageUtils.getImageUrl(product.imageUrl),
                     contentDescription = product.name,
                     modifier = Modifier
                         .size(120.dp)
@@ -113,9 +172,9 @@ fun ProductCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
-                if (product.category.isNotEmpty()) {
+                if (product.category != null) {
                     Text(
-                        text = product.category,
+                        text = product.category.name,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.padding(top = 2.dp)
@@ -161,11 +220,17 @@ fun ProductCard(
 @Composable
 fun ProductDetailDialog(
     product: Product,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    favoritesViewModel: FavoritesViewModel = remember { FavoritesViewModel() }
 ) {
+    val context = LocalContext.current
+    val sessionManager = remember { SessionManager(context) }
+    val currentUser = sessionManager.getUser()
+
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    var isFavorite by remember { mutableStateOf(FavoritesRepository.isFavorite(product.id)) }
+    val favoritesState by favoritesViewModel.uiState.collectAsState()
+    val isFavorite = favoritesState.favoriteIds.contains(product.id)
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -219,7 +284,7 @@ fun ProductDetailDialog(
                     // Imagen del producto (más grande)
                     if (product.imageUrl.isNotEmpty()) {
                         AsyncImage(
-                            model = product.imageUrl,
+                            model = ImageUtils.getImageUrl(product.imageUrl),
                             contentDescription = product.name,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -237,14 +302,14 @@ fun ProductDetailDialog(
                     )
 
                     // Categoría
-                    if (product.category.isNotEmpty()) {
+                    if (product.category != null) {
                         Card(
                             colors = CardDefaults.cardColors(
                                 containerColor = MaterialTheme.colorScheme.secondaryContainer
                             )
                         ) {
                             Text(
-                                text = product.category,
+                                text = product.category.name,
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
@@ -347,11 +412,12 @@ fun ProductDetailDialog(
                         // Botón de Favoritos
                         Button(
                             onClick = {
-                                FavoritesRepository.toggleFavorite(product)
-                                isFavorite = FavoritesRepository.isFavorite(product.id)
+                                currentUser?.id?.let { userId ->
+                                    favoritesViewModel.toggleFavorite(userId, product)
+                                }
                                 scope.launch {
                                     snackbarHostState.showSnackbar(
-                                        message = if (isFavorite) "♥ Agregado a favoritos" else "Eliminado de favoritos",
+                                        message = if (isFavorite) "Eliminado de favoritos" else "♥ Agregado a favoritos",
                                         duration = SnackbarDuration.Short
                                     )
                                 }

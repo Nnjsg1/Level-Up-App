@@ -23,14 +23,20 @@ import androidx.media3.ui.PlayerView
 @Composable
 fun VideoPlayer(
     videoResourceName: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isUrl: Boolean = false
 ) {
     val context = LocalContext.current
 
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
-            // Crear URI del recurso raw
-            val videoUri = "android.resource://${context.packageName}/raw/$videoResourceName".toUri()
+            val videoUri = if (isUrl) {
+                // Si es una URL, usarla directamente
+                videoResourceName.toUri()
+            } else {
+                // Si es un recurso local, construir la URI
+                "android.resource://${context.packageName}/raw/$videoResourceName".toUri()
+            }
             val mediaItem = MediaItem.fromUri(videoUri)
             setMediaItem(mediaItem)
             prepare()

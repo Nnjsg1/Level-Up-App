@@ -16,7 +16,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import com.example.level_up_app.ui.theme.LevelUpAppTheme
+import com.example.level_up_app.utils.SessionManager
 
 
 sealed class Screen {
@@ -35,8 +38,17 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             LevelUpAppTheme {
+                val context = LocalContext.current
+                val sessionManager = remember { SessionManager(context) }
 
                 var currentScreen by remember { mutableStateOf<Screen>(Screen.Login) }
+
+                // Verificar si hay sesión activa al inicio
+                LaunchedEffect(Unit) {
+                    if (sessionManager.isLoggedIn()) {
+                        currentScreen = Screen.Main
+                    }
+                }
 
                 when (currentScreen) {
                     is Screen.Login -> LoginScreen(
@@ -55,7 +67,13 @@ class MainActivity : ComponentActivity() {
                     is Screen.RememberPass -> RememberPassScreen(
                         onBack = { currentScreen = Screen.Login }
                     )
-                    is Screen.Main -> MainMenu(onProfile = { /* no-op: MainMenu now shows Profile internally via selectedIndex */ })
+                    is Screen.Main -> MainMenu(
+                        onProfile = { /* no-op: MainMenu now shows Profile internally via selectedIndex */ },
+                        onLogout = {
+                            loginViewModel.limpiarEstado()
+                            currentScreen = Screen.Login
+                        }
+                    )
                 }
             }
         }

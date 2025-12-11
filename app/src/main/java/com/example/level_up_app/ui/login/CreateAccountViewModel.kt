@@ -1,11 +1,14 @@
 package com.example.level_up_app.ui.login
 
+import android.util.Log
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import com.example.level_up_app.data.model.User
+import com.example.level_up_app.data.repository.UserRepository
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -15,6 +18,9 @@ class CreateAccountViewModel : ViewModel() {
     private val formuCreateAccount = MutableStateFlow(FormularioCreateAccount())
 
     val FormData: StateFlow<FormularioCreateAccount> = formuCreateAccount.asStateFlow()
+
+    private val userRepository = UserRepository()
+    private val TAG = "CreateAccountViewModel"
 
     fun actualizarName(name: String){
         formuCreateAccount.value = formuCreateAccount.value.copy(
@@ -82,6 +88,8 @@ class CreateAccountViewModel : ViewModel() {
 
     fun CreateAccount(){
         viewModelScope.launch {
+            Log.d(TAG, "Iniciando validación de cuenta...")
+
             val f = formuCreateAccount.value
 
             // Validar nombre
@@ -133,14 +141,33 @@ class CreateAccountViewModel : ViewModel() {
 
             errorNull()
 
-            // Si no hay errores, crear cuenta
-            if (f.error == null){
-                formuCreateAccount.value = formuCreateAccount.value.copy(
-                    error = "",
-                    isAccountCreated = true
-                )
-            }
+            // Si no hay errores, crear usuario en el backend
+            Log.d(TAG, "Validación exitosa, enviando usuario al backend...")
+
+            // Crear objeto User con los datos del formulario
+            val newUser = User(
+                name = f.name,
+                email = f.email,
+                clave = f.password,
+                isAdmin = false
+            )
+
+            Log.d(TAG, "Usuario a enviar: $newUser")
+            Log.d(TAG, "JSON que se enviará: {\"name\":\"${f.name}\",\"email\":\"${f.email}\",\"clave\":\"${f.password}\"}")
+
+            // Llamar al repositorio para crear el usuario
+            userRepository.createUser(newUser)
+                .onSuccess { createdUser ->
+                    Log.d(TAG, "✅ Usuario creado exitosamente: $createdUser")
+                    formuCreateAccount.value = formuCreateAccount.value.copy(
+                        error = "",
+                        isAccountCreated = true
+                    )
+                }
+                .onFailure { error ->
+                    Log.e(TAG, "❌ Error al crear usuario: ${error.message}", error)
+                    mensajeError("Error al crear cuenta: ${error.message}")
+                }
         }
     }
 }
-

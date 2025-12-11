@@ -1,8 +1,10 @@
 package com.example.level_up_app.ui.login
 
+import android.util.Log
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.level_up_app.data.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -10,6 +12,7 @@ import kotlinx.coroutines.launch
 
 class LoginViewModel : ViewModel() {
     private val formuLogin = MutableStateFlow(FormularioLogin())
+    private val userRepository = UserRepository()
 
     // en la Screen ocupare el FormData
     val FormData: StateFlow<FormularioLogin> = formuLogin.asStateFlow()
@@ -39,13 +42,13 @@ class LoginViewModel : ViewModel() {
     private fun mensajeError(mensaje: String){
         formuLogin.value = formuLogin.value.copy(
             error = mensaje,
-            isLogin = false
+            isLogin = false,
+            isLoading = false
         )
     }
+
     fun Login(){
         viewModelScope.launch {
-            // conectar con la API
-            // reglas de negocio (SET)
             val f = formuLogin.value
 
             // Validar que el email no esté vacío
@@ -80,14 +83,45 @@ class LoginViewModel : ViewModel() {
                 mensajeError("La contraseña debe tener al menos 5 caracteres")
                 return@launch
             }
-            if (f.error==null){
+
+            // Si todas las validaciones pasan, intentar login con el backend
+            if (f.error == null) {
+                // Mostrar estado de carga
                 formuLogin.value = formuLogin.value.copy(
-                    error = "",
-                    isLogin = true
+                    isLoading = true,
+                    error = null
                 )
+
+                try {
+                    // Llamar al repositorio para hacer login (usando 'clave')
+                    val response = userRepository.login(f.email, f.password)
+
+                    if (response.success) {
+                        // Login exitoso
+                        Log.d("LoginViewModel", "Login exitoso: ${response.user?.name}")
+                        formuLogin.value = formuLogin.value.copy(
+                            error = null,
+                            isLogin = true,
+                            isLoading = false,
+                            user = response.user
+                        )
+                    } else {
+                        // Login fallido
+                        Log.e("LoginViewModel", "Login fallido: ${response.message}")
+                        mensajeError(response.message)
+                    }
+                } catch (e: Exception) {
+                    Log.e("LoginViewModel", "Error en login: ${e.message}")
+                    mensajeError("Error de conexión: ${e.localizedMessage}")
+                }
             }
         }
 
+    }
+
+    // Método para limpiar el estado cuando el usuario cierra sesión
+    fun limpiarEstado() {
+        formuLogin.value = FormularioLogin()
     }
 }
 

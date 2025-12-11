@@ -20,11 +20,11 @@ object CartRepository {
         }
     }
 
-    fun removeFromCart(productId: String) {
+    fun removeFromCart(productId: Long) {
         _cartItems.removeAll { it.product.id == productId }
     }
 
-    fun updateQuantity(productId: String, newQuantity: Int) {
+    fun updateQuantity(productId: Long, newQuantity: Int) {
         if (newQuantity <= 0) {
             removeFromCart(productId)
             return

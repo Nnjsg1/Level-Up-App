@@ -1,10 +1,12 @@
 package com.example.level_up_app.data
 
 import android.util.Log
+import com.example.level_up_app.remote.ApiService
 import com.example.level_up_app.remote.RetrofitInstance
 
-class ProductRepository {
-    private val apiService = RetrofitInstance.api
+class ProductRepository(
+    private val apiService: ApiService = RetrofitInstance.api
+) {
 
     /**
      * Obtiene todos los productos
@@ -116,20 +118,78 @@ class ProductRepository {
     }
 
     /**
-     * Elimina un producto
+     * Descontinúa un producto (soft delete)
      */
-    suspend fun deleteProduct(id: Long): Boolean {
+    suspend fun discontinueProduct(id: Long): Product? {
         return try {
-            val response = apiService.deleteProduct(id)
+            val response = apiService.discontinueProduct(id)
             if (response.isSuccessful) {
-                true
+                Log.d("ProductRepository", "Producto descontinuado: $id")
+                response.body()
             } else {
-                Log.e("ProductRepository", "Error deleting product: ${response.code()}")
-                false
+                Log.e("ProductRepository", "Error discontinuing product: ${response.code()}")
+                null
             }
         } catch (e: Exception) {
-            Log.e("ProductRepository", "Exception deleting product: ${e.message}")
-            false
+            Log.e("ProductRepository", "Exception discontinuing product: ${e.message}")
+            null
+        }
+    }
+
+    /**
+     * Reactiva un producto descontinuado
+     */
+    suspend fun reactivateProduct(id: Long): Product? {
+        return try {
+            val response = apiService.reactivateProduct(id)
+            if (response.isSuccessful) {
+                Log.d("ProductRepository", "Producto reactivado: $id")
+                response.body()
+            } else {
+                Log.e("ProductRepository", "Error reactivating product: ${response.code()}")
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("ProductRepository", "Exception reactivating product: ${e.message}")
+            null
+        }
+    }
+
+    /**
+     * Obtiene solo productos activos
+     */
+    suspend fun fetchActiveProducts(): List<Product>? {
+        return try {
+            val response = apiService.getActiveProducts()
+            if (response.isSuccessful) {
+                Log.d("ProductRepository", "Productos activos obtenidos: ${response.body()?.size}")
+                response.body()
+            } else {
+                Log.e("ProductRepository", "Error fetching active products: ${response.code()}")
+                emptyList()
+            }
+        } catch (e: Exception) {
+            Log.e("ProductRepository", "Exception fetching active products: ${e.message}")
+            null
+        }
+    }
+
+    /**
+     * Obtiene solo productos descontinuados
+     */
+    suspend fun fetchDiscontinuedProducts(): List<Product>? {
+        return try {
+            val response = apiService.getDiscontinuedProducts()
+            if (response.isSuccessful) {
+                Log.d("ProductRepository", "Productos descontinuados obtenidos: ${response.body()?.size}")
+                response.body()
+            } else {
+                Log.e("ProductRepository", "Error fetching discontinued products: ${response.code()}")
+                emptyList()
+            }
+        } catch (e: Exception) {
+            Log.e("ProductRepository", "Exception fetching discontinued products: ${e.message}")
+            null
         }
     }
 

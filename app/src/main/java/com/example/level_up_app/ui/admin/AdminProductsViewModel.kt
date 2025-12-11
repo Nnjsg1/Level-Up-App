@@ -17,15 +17,17 @@ data class AdminProductsState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val successMessage: String? = null,
-    val showDeleteDialog: Boolean = false,
-    val productToDelete: Product? = null
+    val showDiscontinueDialog: Boolean = false,
+    val productToDiscontinue: Product? = null,
+    val showDiscontinuedOnly: Boolean = false
 )
 
-class AdminProductsViewModel : ViewModel() {
+class AdminProductsViewModel(
+    private val productRepository: ProductRepository = ProductRepository()
+) : ViewModel() {
     private val _uiState = MutableStateFlow(AdminProductsState())
     val uiState: StateFlow<AdminProductsState> = _uiState.asStateFlow()
 
-    private val productRepository = ProductRepository()
 
     init {
         loadAllProducts()
@@ -37,7 +39,12 @@ class AdminProductsViewModel : ViewModel() {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
             try {
-                val products = productRepository.fetchProducts()
+                val products = if (_uiState.value.showDiscontinuedOnly) {
+                    productRepository.fetchDiscontinuedProducts()
+                } else {
+                    productRepository.fetchActiveProducts()
+                }
+
                 if (products != null) {
                     _uiState.value = _uiState.value.copy(
                         productsList = products,
@@ -62,6 +69,13 @@ class AdminProductsViewModel : ViewModel() {
         }
     }
 
+    fun toggleFilter() {
+        _uiState.value = _uiState.value.copy(
+            showDiscontinuedOnly = !_uiState.value.showDiscontinuedOnly
+        )
+        loadAllProducts()
+    }
+
     fun loadCategories() {
         viewModelScope.launch {
             try {
@@ -76,46 +90,73 @@ class AdminProductsViewModel : ViewModel() {
         }
     }
 
-    fun showDeleteDialog(product: Product) {
+    fun showDiscontinueDialog(product: Product) {
         _uiState.value = _uiState.value.copy(
-            showDeleteDialog = true,
-            productToDelete = product
+            showDiscontinueDialog = true,
+            productToDiscontinue = product
         )
     }
 
-    fun hideDeleteDialog() {
+    fun hideDiscontinueDialog() {
         _uiState.value = _uiState.value.copy(
-            showDeleteDialog = false,
-            productToDelete = null
+            showDiscontinueDialog = false,
+            productToDiscontinue = null
         )
     }
 
-    fun deleteProduct(productId: Long) {
+    fun discontinueProduct(productId: Long) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
 
             try {
-                val success = productRepository.deleteProduct(productId)
-                if (success) {
+                val product = productRepository.discontinueProduct(productId)
+                if (product != null) {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        successMessage = "Producto eliminado correctamente",
-                        showDeleteDialog = false,
-                        productToDelete = null
+                        successMessage = "Producto descontinuado correctamente",
+                        showDiscontinueDialog = false,
+                        productToDiscontinue = null
                     )
-                    // Recargar la lista
                     loadAllProducts()
                 } else {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = "Error al eliminar el producto"
+                        error = "Error al descontinuar el producto"
                     )
                 }
             } catch (e: Exception) {
-                Log.e("AdminProductsViewModel", "Error deleting product: ${e.message}")
+                Log.e("AdminProductsViewModel", "Error discontinuing product: ${e.message}")
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = "Error al eliminar: ${e.localizedMessage}"
+                    error = "Error al descontinuar: ${e.localizedMessage}"
+                )
+            }
+        }
+    }
+
+    fun reactivateProduct(productId: Long) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+
+            try {
+                val product = productRepository.reactivateProduct(productId)
+                if (product != null) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        successMessage = "Producto reactivado correctamente"
+                    )
+                    loadAllProducts()
+                } else {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = "Error al reactivar el producto"
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e("AdminProductsViewModel", "Error reactivating product: ${e.message}")
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = "Error al reactivar: ${e.localizedMessage}"
                 )
             }
         }

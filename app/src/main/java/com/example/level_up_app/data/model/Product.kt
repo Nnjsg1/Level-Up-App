@@ -25,6 +25,7 @@ data class Product(
     val currency: String,
     val categoryId: Int,
     val stock: Int,
+    val discontinued: Boolean = false,
     val createdAt: String? = null,
     val updatedAt: String? = null,
     val images: List<ProductImage>? = null,

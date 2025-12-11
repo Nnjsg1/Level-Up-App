@@ -55,8 +55,17 @@ interface ApiService {
     @PUT("products/{id}")
     suspend fun updateProduct(@Path("id") id: Int, @Body product: Product): Response<Product>
 
-    @DELETE("products/{id}")
-    suspend fun deleteProduct(@Path("id") id: Int): Response<Unit>
+    @PATCH("products/{id}/discontinue")
+    suspend fun discontinueProduct(@Path("id") id: Int): Response<Product>
+
+    @PATCH("products/{id}/reactivate")
+    suspend fun reactivateProduct(@Path("id") id: Int): Response<Product>
+
+    @GET("products/active")
+    suspend fun getActiveProducts(): Response<List<Product>>
+
+    @GET("products/discontinued")
+    suspend fun getDiscontinuedProducts(): Response<List<Product>>
 
     // CATEGORÍAS
     @GET("categories")

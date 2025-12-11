@@ -119,12 +119,15 @@ class ProductRepository(
 
     /**
      * Descontinúa un producto (soft delete)
+     * Los productos descontinuados se filtrarán automáticamente cuando los usuarios
+     * carguen sus carritos y favoritos
      */
     suspend fun discontinueProduct(id: Long): Product? {
         return try {
             val response = apiService.discontinueProduct(id)
             if (response.isSuccessful) {
                 Log.d("ProductRepository", "Producto descontinuado: $id")
+                Log.d("ProductRepository", "Los productos descontinuados se eliminarán automáticamente de carritos y favoritos cuando los usuarios actualicen")
                 response.body()
             } else {
                 Log.e("ProductRepository", "Error discontinuing product: ${response.code()}")
@@ -135,6 +138,7 @@ class ProductRepository(
             null
         }
     }
+
 
     /**
      * Reactiva un producto descontinuado

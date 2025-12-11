@@ -11,6 +11,7 @@ class CartRepository(
 
     /**
      * Obtener carrito de un usuario
+     * Filtra automáticamente productos descontinuados
      */
     suspend fun getCartByUser(userId: Long): List<CartItem>? {
         return try {
@@ -24,14 +25,23 @@ class CartRepository(
                 cartList.forEach { cart ->
                     val product = productRepository.getProductById(cart.productId)
                     if (product != null) {
-                        cartItems.add(
-                            CartItem(
-                                product = product,
-                                quantity = cart.quantity
+                        // Verificar si el producto está descontinuado
+                        if (product.discontinued) {
+                            // Eliminar del carrito en el backend
+                            Log.d("CartRepository", "Producto descontinuado detectado: ${product.id}, eliminando del carrito...")
+                            removeFromCart(userId, cart.productId)
+                        } else {
+                            // Solo agregar productos activos
+                            cartItems.add(
+                                CartItem(
+                                    product = product,
+                                    quantity = cart.quantity
+                                )
                             )
-                        )
+                        }
                     }
                 }
+                Log.d("CartRepository", "Productos activos en carrito: ${cartItems.size}")
                 cartItems
             } else {
                 Log.e("CartRepository", "Error obteniendo carrito: ${response.code()}")

@@ -36,7 +36,6 @@ import com.example.level_up_app.ui.admin.AdminNewsScreen
 import com.example.level_up_app.ui.admin.NewsFormScreen
 import com.example.level_up_app.ui.admin.AdminNewsViewModel
 import com.example.level_up_app.ui.admin.AdminProductsScreen
-import com.example.level_up_app.ui.admin.AdminProductsViewModel
 import com.example.level_up_app.ui.profile.ProfileEditScreen
 import com.example.level_up_app.ui.profile.ProfileScreen
 import com.example.level_up_app.ui.main.HomeScreen

@@ -22,11 +22,12 @@ data class AdminProductsState(
     val showDiscontinuedOnly: Boolean = false
 )
 
-class AdminProductsViewModel : ViewModel() {
+class AdminProductsViewModel(
+    private val productRepository: ProductRepository = ProductRepository()
+) : ViewModel() {
     private val _uiState = MutableStateFlow(AdminProductsState())
     val uiState: StateFlow<AdminProductsState> = _uiState.asStateFlow()
 
-    private val productRepository = ProductRepository()
 
     init {
         loadAllProducts()

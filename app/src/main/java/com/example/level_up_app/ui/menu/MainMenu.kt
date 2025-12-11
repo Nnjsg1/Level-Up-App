@@ -40,6 +40,7 @@ import com.example.level_up_app.ui.profile.ProfileEditScreen
 import com.example.level_up_app.ui.profile.ProfileScreen
 import com.example.level_up_app.ui.main.HomeScreen
 import com.example.level_up_app.ui.favorites.FavoritesScreen
+import com.example.level_up_app.ui.checkout.CheckoutScreen
 import com.example.level_up_app.buys.PayScreen
 import com.example.level_up_app.buys.PayResultScreen
 import com.example.level_up_app.screen.Fondo_2
@@ -219,14 +220,10 @@ fun MainMenu(
                         2 -> NewsScreen()
                         4 -> FavoritesScreen()
                         5 -> CartScreen(onNavigateToPay = { selectedIndex = 6 })
-                        6 -> PayScreen(
-                            onCancel = { selectedIndex = 0 },
-                            onSuccess = {
+                        6 -> CheckoutScreen(
+                            onNavigateBack = { selectedIndex = 5 },
+                            onCheckoutSuccess = { orderId ->
                                 lastPaymentSuccess = true
-                                selectedIndex = 7
-                            },
-                            onFailure = {
-                                lastPaymentSuccess = false
                                 selectedIndex = 7
                             }
                         )

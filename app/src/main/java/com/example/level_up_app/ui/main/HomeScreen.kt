@@ -16,22 +16,37 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
 import com.example.level_up_app.data.Product
 import com.example.level_up_app.ui.catalog.ProductDetailDialog
 import com.example.level_up_app.ui.catalog.formatPrice
 import com.example.level_up_app.ui.catalog.CatalogViewModel
+import com.example.level_up_app.ui.favorites.FavoritesViewModel
+import com.example.level_up_app.utils.SessionManager
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.example.level_up_app.utils.ImageUtils
 
 @Composable
 fun HomeScreen(
-    viewModel: CatalogViewModel = remember { CatalogViewModel() }
+    viewModel: CatalogViewModel = remember { CatalogViewModel() },
+    favoritesViewModel: FavoritesViewModel = remember { FavoritesViewModel() }
 ) {
+    val context = LocalContext.current
+    val sessionManager = remember { SessionManager(context) }
+    val currentUser = sessionManager.getUser()
+
     var selectedProduct by remember { mutableStateOf<Product?>(null) }
     val uiState by viewModel.uiState.collectAsState()
     val featuredProducts = uiState.products.take(6) // Tomar los primeros 6 productos como destacados
+
+    // Cargar favoritos al inicio
+    LaunchedEffect(currentUser?.id) {
+        currentUser?.id?.let { userId ->
+            favoritesViewModel.loadFavorites(userId)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -122,7 +137,8 @@ fun HomeScreen(
     selectedProduct?.let { product ->
         ProductDetailDialog(
             product = product,
-            onDismiss = { selectedProduct = null }
+            onDismiss = { selectedProduct = null },
+            favoritesViewModel = favoritesViewModel
         )
     }
 }

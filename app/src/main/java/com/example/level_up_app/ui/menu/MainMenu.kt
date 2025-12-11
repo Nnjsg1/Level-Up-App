@@ -110,6 +110,11 @@ fun MainMenu(
                                 text = { Text("Administrar Productos") },
                                 onClick = {
                                     showAdminMenu = false
+                                    // Resetear otros estados de admin
+                                    showUserAdmin = false
+                                    showNewsForm = false
+                                    selectedIndex = 0
+                                    // Activar administrar productos
                                     showAdminProducts = true
                                 }
                             )
@@ -117,6 +122,11 @@ fun MainMenu(
                                 text = { Text("Administrar Usuarios") },
                                 onClick = {
                                     showAdminMenu = false
+                                    // Resetear otros estados de admin
+                                    showAdminProducts = false
+                                    showNewsForm = false
+                                    selectedIndex = 0
+                                    // Activar administrar usuarios
                                     showUserAdmin = true
                                 }
                             )
@@ -124,6 +134,10 @@ fun MainMenu(
                                 text = { Text("Administrar Noticias") },
                                 onClick = {
                                     showAdminMenu = false
+                                    // Resetear otros estados de admin
+                                    showUserAdmin = false
+                                    showAdminProducts = false
+                                    // Activar administrar noticias
                                     selectedIndex = 8
                                 }
                             )
@@ -135,6 +149,7 @@ fun MainMenu(
                         selectedIndex = 4
                         showUserAdmin = false
                         showAdminProducts = false
+                        showNewsForm = false
                     }) {
                         Icon(
                             imageVector = if (selectedIndex == 4) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
@@ -145,6 +160,7 @@ fun MainMenu(
                         selectedIndex = 5
                         showUserAdmin = false
                         showAdminProducts = false
+                        showNewsForm = false
                     }) {
                         Icon(
                             imageVector = if (selectedIndex == 5) Icons.Filled.ShoppingCart else Icons.Outlined.ShoppingCart,
@@ -167,6 +183,7 @@ fun MainMenu(
              // Resetear estados de pantallas de administración al cambiar de tab
              showUserAdmin = false
              showAdminProducts = false
+             showNewsForm = false
          }, onProfile = onProfile) }
 
     ) { innerPadding ->

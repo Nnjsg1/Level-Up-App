@@ -113,7 +113,7 @@ class AdminProductsViewModel(
                 if (product != null) {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        successMessage = "Producto descontinuado correctamente",
+                        successMessage = "Producto descontinuado. Se eliminará automáticamente de carritos y favoritos",
                         showDiscontinueDialog = false,
                         productToDiscontinue = null
                     )

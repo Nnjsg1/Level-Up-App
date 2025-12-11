@@ -40,6 +40,7 @@ import com.example.level_up_app.ui.profile.ProfileEditScreen
 import com.example.level_up_app.ui.profile.ProfileScreen
 import com.example.level_up_app.ui.main.HomeScreen
 import com.example.level_up_app.ui.favorites.FavoritesScreen
+import com.example.level_up_app.ui.checkout.CheckoutScreen
 import com.example.level_up_app.buys.PayScreen
 import com.example.level_up_app.buys.PayResultScreen
 import com.example.level_up_app.screen.Fondo_2
@@ -109,6 +110,11 @@ fun MainMenu(
                                 text = { Text("Administrar Productos") },
                                 onClick = {
                                     showAdminMenu = false
+                                    // Resetear otros estados de admin
+                                    showUserAdmin = false
+                                    showNewsForm = false
+                                    selectedIndex = 0
+                                    // Activar administrar productos
                                     showAdminProducts = true
                                 }
                             )
@@ -116,6 +122,11 @@ fun MainMenu(
                                 text = { Text("Administrar Usuarios") },
                                 onClick = {
                                     showAdminMenu = false
+                                    // Resetear otros estados de admin
+                                    showAdminProducts = false
+                                    showNewsForm = false
+                                    selectedIndex = 0
+                                    // Activar administrar usuarios
                                     showUserAdmin = true
                                 }
                             )
@@ -123,6 +134,10 @@ fun MainMenu(
                                 text = { Text("Administrar Noticias") },
                                 onClick = {
                                     showAdminMenu = false
+                                    // Resetear otros estados de admin
+                                    showUserAdmin = false
+                                    showAdminProducts = false
+                                    // Activar administrar noticias
                                     selectedIndex = 8
                                 }
                             )
@@ -134,6 +149,7 @@ fun MainMenu(
                         selectedIndex = 4
                         showUserAdmin = false
                         showAdminProducts = false
+                        showNewsForm = false
                     }) {
                         Icon(
                             imageVector = if (selectedIndex == 4) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
@@ -144,6 +160,7 @@ fun MainMenu(
                         selectedIndex = 5
                         showUserAdmin = false
                         showAdminProducts = false
+                        showNewsForm = false
                     }) {
                         Icon(
                             imageVector = if (selectedIndex == 5) Icons.Filled.ShoppingCart else Icons.Outlined.ShoppingCart,
@@ -166,6 +183,7 @@ fun MainMenu(
              // Resetear estados de pantallas de administración al cambiar de tab
              showUserAdmin = false
              showAdminProducts = false
+             showNewsForm = false
          }, onProfile = onProfile) }
 
     ) { innerPadding ->
@@ -202,14 +220,10 @@ fun MainMenu(
                         2 -> NewsScreen()
                         4 -> FavoritesScreen()
                         5 -> CartScreen(onNavigateToPay = { selectedIndex = 6 })
-                        6 -> PayScreen(
-                            onCancel = { selectedIndex = 0 },
-                            onSuccess = {
+                        6 -> CheckoutScreen(
+                            onNavigateBack = { selectedIndex = 5 },
+                            onCheckoutSuccess = { orderId ->
                                 lastPaymentSuccess = true
-                                selectedIndex = 7
-                            },
-                            onFailure = {
-                                lastPaymentSuccess = false
                                 selectedIndex = 7
                             }
                         )

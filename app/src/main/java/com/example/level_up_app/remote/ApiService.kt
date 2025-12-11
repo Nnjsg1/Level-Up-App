@@ -8,6 +8,10 @@ import com.example.level_up_app.data.Tag
 import com.example.level_up_app.data.User
 import com.example.level_up_app.data.News
 import com.example.level_up_app.data.Favorite
+import com.example.level_up_app.data.Cart
+import com.example.level_up_app.data.AddToCartRequest
+import com.example.level_up_app.data.Order
+import com.example.level_up_app.data.CreateOrderRequest
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -120,5 +124,37 @@ interface ApiService {
 
     @DELETE("favorites/{userId}/{productId}")
     suspend fun deleteFavorite(@Path("userId") userId: Int, @Path("productId") productId: Long): Response<Unit>
+
+    // ============ ENDPOINTS DE CARRITO ============
+
+    @GET("cart/{userId}")
+    suspend fun getCartByUser(@Path("userId") userId: Int): Response<List<Cart>>
+
+
+    @POST("cart")
+    suspend fun addToCart(@Body cartRequest: AddToCartRequest): Response<Cart>
+
+    @PUT("cart/{userId}/{productId}")
+    suspend fun updateCartItem(@Path("userId") userId: Int, @Path("productId") productId: Long, @Body cartRequest: AddToCartRequest): Response<Cart>
+
+    @DELETE("cart/{userId}/{productId}")
+    suspend fun removeFromCart(@Path("userId") userId: Int, @Path("productId") productId: Long): Response<Unit>
+
+    @DELETE("cart/{userId}")
+    suspend fun clearCart(@Path("userId") userId: Int): Response<Unit>
+
+    // ============ ENDPOINTS DE ÓRDENES ============
+
+    @GET("orders/user/{userId}")
+    suspend fun getOrdersByUser(@Path("userId") userId: Int): Response<List<Order>>
+
+    @GET("orders/{id}")
+    suspend fun getOrderById(@Path("id") id: Int): Response<Order>
+
+    @POST("orders")
+    suspend fun createOrder(@Body orderRequest: CreateOrderRequest): Response<Order>
+
+    @PUT("orders/{id}")
+    suspend fun updateOrder(@Path("id") id: Int, @Body order: Order): Response<Order>
 }
 

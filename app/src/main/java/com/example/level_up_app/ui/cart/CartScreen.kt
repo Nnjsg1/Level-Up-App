@@ -8,86 +8,192 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.level_up_app.data.CartItem
-import com.example.level_up_app.data.CartRepository
 import com.example.level_up_app.ui.catalog.formatPrice
 import com.example.level_up_app.utils.ImageUtils
+import com.example.level_up_app.utils.SessionManager
 
 @Composable
 fun CartScreen(
+    viewModel: CartViewModel = remember { CartViewModel() },
     onNavigateToPay: () -> Unit = {}
 ) {
-    val cartItems = CartRepository.cartItems
+    val context = LocalContext.current
+    val sessionManager = remember { SessionManager(context) }
+    val currentUser = sessionManager.getUser()
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        if (cartItems.isEmpty()) {
-            // Carrito vacío
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "Tu carrito está vacío",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Agrega productos desde el catálogo",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        } else {
-            // Lista de productos en el carrito
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(cartItems) { cartItem ->
-                    CartItemCard(
-                        cartItem = cartItem,
-                        onQuantityChange = { newQuantity ->
-                            CartRepository.updateQuantity(cartItem.product.id, newQuantity)
-                        },
-                        onRemove = {
-                            CartRepository.removeFromCart(cartItem.product.id)
+    val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    var showClearDialog by remember { mutableStateOf(false) }
+
+    // Cargar carrito al inicio
+    LaunchedEffect(currentUser?.id) {
+        currentUser?.id?.let { userId ->
+            viewModel.loadCart(userId)
+        }
+    }
+
+    // Mostrar mensajes
+    LaunchedEffect(uiState.successMessage, uiState.error) {
+        uiState.successMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearMessages()
+        }
+        uiState.error?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearMessages()
+        }
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            when {
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+                uiState.cartItems.isEmpty() -> {
+                    // Carrito vacío
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.ShoppingCart,
+                            contentDescription = "Carrito vacío",
+                            modifier = Modifier.size(80.dp),
+                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Tu carrito está vacío",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Agrega productos desde el catálogo",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                else -> {
+                    // Lista de productos en el carrito
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        item {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "${uiState.cartItems.size} producto${if (uiState.cartItems.size != 1) "s" else ""} en el carrito",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                TextButton(
+                                    onClick = { showClearDialog = true }
+                                ) {
+                                    Text("Vaciar carrito")
+                                }
+                            }
+                        }
+
+                        items(uiState.cartItems) { cartItem ->
+                            currentUser?.id?.let { userId ->
+                                CartItemCard(
+                                    cartItem = cartItem,
+                                    onIncrement = {
+                                        viewModel.incrementQuantity(userId, cartItem)
+                                    },
+                                    onDecrement = {
+                                        viewModel.decrementQuantity(userId, cartItem)
+                                    },
+                                    onRemove = {
+                                        viewModel.removeFromCart(userId, cartItem.product.id)
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    // Resumen del total
+                    CartSummary(
+                        total = uiState.total,
+                        itemCount = uiState.cartItems.size,
+                        onCheckout = {
+                            onNavigateToPay()
                         }
                     )
                 }
             }
-
-            // Resumen del total
-            CartSummary(
-                total = CartRepository.getTotal(),
-                onCheckout = {
-                    onNavigateToPay()
-                }
-            )
         }
+    }
+
+    // Diálogo de confirmación para vaciar carrito
+    if (showClearDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearDialog = false },
+            title = { Text("Vaciar Carrito") },
+            text = { Text("¿Estás seguro que deseas eliminar todos los productos del carrito?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        currentUser?.id?.let { userId ->
+                            viewModel.clearCart(userId)
+                        }
+                        showClearDialog = false
+                    }
+                ) {
+                    Text("Sí, vaciar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }
 
 @Composable
 fun CartItemCard(
     cartItem: CartItem,
-    onQuantityChange: (Int) -> Unit,
+    onIncrement: () -> Unit,
+    onDecrement: () -> Unit,
     onRemove: () -> Unit
 ) {
     Card(
@@ -139,7 +245,7 @@ fun CartItemCard(
                 ) {
                     // Botón disminuir
                     IconButton(
-                        onClick = { onQuantityChange(cartItem.quantity - 1) },
+                        onClick = onDecrement,
                         modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
@@ -154,46 +260,33 @@ fun CartItemCard(
                         text = "${cartItem.quantity}",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.widthIn(min = 30.dp),
+                        modifier = Modifier.widthIn(min = 24.dp),
                         textAlign = TextAlign.Center
                     )
 
                     // Botón aumentar
                     IconButton(
-                        onClick = { onQuantityChange(cartItem.quantity + 1) },
-                        modifier = Modifier.size(32.dp),
-                        enabled = cartItem.quantity < cartItem.product.stock
+                        onClick = onIncrement,
+                        modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
                             Icons.Default.Add,
                             contentDescription = "Aumentar cantidad",
-                            tint = if (cartItem.quantity < cartItem.product.stock)
-                                MaterialTheme.colorScheme.primary
-                            else
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
-
-                // Subtotal
-                Text(
-                    text = "Subtotal: $${formatPrice(cartItem.product.price * cartItem.quantity)}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
             }
 
             // Botón eliminar
             IconButton(
                 onClick = onRemove,
-                colors = IconButtonDefaults.iconButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error
-                )
+                modifier = Modifier.padding(start = 8.dp)
             ) {
                 Icon(
                     Icons.Default.Delete,
-                    contentDescription = "Eliminar del carrito"
+                    contentDescription = "Eliminar",
+                    tint = MaterialTheme.colorScheme.error
                 )
             }
         }
@@ -203,14 +296,13 @@ fun CartItemCard(
 @Composable
 fun CartSummary(
     total: Double,
+    itemCount: Int,
     onCheckout: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        ),
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column(
             modifier = Modifier
@@ -219,18 +311,15 @@ fun CartSummary(
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Total:",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
+                    text = "Subtotal ($itemCount items)",
+                    style = MaterialTheme.typography.bodyLarge
                 )
                 Text(
                     text = "$${formatPrice(total)}",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -242,11 +331,9 @@ fun CartSummary(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = total > 0
             ) {
-                Text(
-                    text = "Proceder con la compra",
-                    style = MaterialTheme.typography.titleMedium
-                )
+                Text("Proceder al Pago")
             }
         }
     }
 }
+

@@ -35,13 +35,16 @@ class CatalogViewModel : ViewModel() {
             try {
                 val products = productRepository.fetchProducts()
                 if (products != null) {
-                    allProducts = products
+                    // Filtrar productos descontinuados - solo mostrar activos en el catálogo
+                    val activeProducts = products.filter { !it.discontinued }
+                    allProducts = activeProducts
+
                     _uiState.value = _uiState.value.copy(
-                        products = products,
+                        products = activeProducts,
                         isLoading = false,
                         error = null
                     )
-                    Log.d("CatalogViewModel", "Productos cargados: ${products.size}")
+                    Log.d("CatalogViewModel", "Productos activos cargados: ${activeProducts.size} de ${products.size} totales")
                 } else {
                     _uiState.value = _uiState.value.copy(
                         products = emptyList(),
@@ -73,12 +76,14 @@ class CatalogViewModel : ViewModel() {
             try {
                 val results = productRepository.searchProducts(query)
                 if (results != null) {
+                    // Filtrar productos descontinuados de los resultados
+                    val activeResults = results.filter { !it.discontinued }
                     _uiState.value = _uiState.value.copy(
-                        products = results,
+                        products = activeResults,
                         isLoading = false
                     )
                 } else {
-                    // Si falla la búsqueda en backend, buscar localmente
+                    // Si falla la búsqueda en backend, buscar localmente (ya filtrado por activos)
                     val localResults = allProducts.filter {
                         it.name.contains(query, ignoreCase = true) ||
                         it.description.contains(query, ignoreCase = true)
@@ -102,8 +107,10 @@ class CatalogViewModel : ViewModel() {
             try {
                 val results = productRepository.getProductsByCategory(categoryId)
                 if (results != null) {
+                    // Filtrar productos descontinuados
+                    val activeResults = results.filter { !it.discontinued }
                     _uiState.value = _uiState.value.copy(
-                        products = results,
+                        products = activeResults,
                         isLoading = false
                     )
                 }

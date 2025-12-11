@@ -23,6 +23,7 @@ import com.example.level_up_app.ui.catalog.ProductDetailDialog
 import com.example.level_up_app.ui.catalog.formatPrice
 import com.example.level_up_app.ui.catalog.CatalogViewModel
 import com.example.level_up_app.ui.favorites.FavoritesViewModel
+import com.example.level_up_app.ui.cart.CartViewModel
 import com.example.level_up_app.utils.SessionManager
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,7 +32,8 @@ import com.example.level_up_app.utils.ImageUtils
 @Composable
 fun HomeScreen(
     viewModel: CatalogViewModel = remember { CatalogViewModel() },
-    favoritesViewModel: FavoritesViewModel = remember { FavoritesViewModel() }
+    favoritesViewModel: FavoritesViewModel = remember { FavoritesViewModel() },
+    cartViewModel: CartViewModel = remember { CartViewModel() }
 ) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
@@ -45,6 +47,7 @@ fun HomeScreen(
     LaunchedEffect(currentUser?.id) {
         currentUser?.id?.let { userId ->
             favoritesViewModel.loadFavorites(userId)
+            cartViewModel.loadCart(userId)
         }
     }
 
@@ -138,7 +141,8 @@ fun HomeScreen(
         ProductDetailDialog(
             product = product,
             onDismiss = { selectedProduct = null },
-            favoritesViewModel = favoritesViewModel
+            favoritesViewModel = favoritesViewModel,
+            cartViewModel = cartViewModel
         )
     }
 }

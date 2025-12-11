@@ -10,6 +10,8 @@ import com.example.level_up_app.data.News
 import com.example.level_up_app.data.Favorite
 import com.example.level_up_app.data.Cart
 import com.example.level_up_app.data.AddToCartRequest
+import com.example.level_up_app.data.Order
+import com.example.level_up_app.data.CreateOrderRequest
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -140,5 +142,19 @@ interface ApiService {
 
     @DELETE("cart/{userId}")
     suspend fun clearCart(@Path("userId") userId: Int): Response<Unit>
+
+    // ============ ENDPOINTS DE ÓRDENES ============
+
+    @GET("orders/user/{userId}")
+    suspend fun getOrdersByUser(@Path("userId") userId: Int): Response<List<Order>>
+
+    @GET("orders/{id}")
+    suspend fun getOrderById(@Path("id") id: Int): Response<Order>
+
+    @POST("orders")
+    suspend fun createOrder(@Body orderRequest: CreateOrderRequest): Response<Order>
+
+    @PUT("orders/{id}")
+    suspend fun updateOrder(@Path("id") id: Int, @Body order: Order): Response<Order>
 }
 

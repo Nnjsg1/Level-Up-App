@@ -12,6 +12,7 @@ data class Product(
     val imageUrl: String = "",
     val stock: Int = 0,
     val currency: String = "CLP",
+    val discontinued: Boolean = false,
     val category: Category? = null,
     val tags: List<Tag> = emptyList()
 )

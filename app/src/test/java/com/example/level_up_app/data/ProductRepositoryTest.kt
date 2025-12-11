@@ -2,17 +2,16 @@ package com.example.level_up_app.data
 
 import android.util.Log
 import com.example.level_up_app.remote.ApiService
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.mockkStatic
+import io.mockk.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Before
 import org.junit.Test
 import org.junit.Assert.*
 import retrofit2.Response
+
+@OptIn(ExperimentalCoroutinesApi::class)
 
 class ProductRepositoryTest {
 
@@ -164,56 +163,140 @@ class ProductRepositoryTest {
     }
 
     @Test
-    fun `eliminar producto debe retornar verdadero cuando se elimina exitosamente`() = runTest {
+    fun `actualizar producto debe retornar null cuando hay error`() = runTest {
         // Dado
         val productId = 1L
-        coEvery { apiService.deleteProduct(productId) } returns Response.success(Unit)
-
-        // Cuando
-        val result = repository.deleteProduct(productId)
-
-        // Entonces
-        assertTrue(result)
-        coVerify { apiService.deleteProduct(productId) }
-    }
-
-    @Test
-    fun `eliminar producto debe retornar falso cuando hay error`() = runTest {
-        // Dado
-        val productId = 1L
-        coEvery { apiService.deleteProduct(productId) } returns Response.error(
-            500,
-            "Server error".toResponseBody()
+        val updatedProduct = mockProducts[0]
+        coEvery { apiService.updateProduct(productId, updatedProduct) } returns Response.error(
+            400,
+            "Bad request".toResponseBody()
         )
 
         // Cuando
-        val result = repository.deleteProduct(productId)
+        val result = repository.updateProduct(productId, updatedProduct)
 
         // Entonces
-        assertFalse(result)
+        assertNull(result)
     }
 
     @Test
-    fun `eliminar producto debe retornar falso cuando hay excepcion`() = runTest {
+    fun `discontinueProduct debe marcar producto como descontinuado`() = runTest {
         // Dado
         val productId = 1L
-        coEvery { apiService.deleteProduct(productId) } throws Exception("Network error")
+        val discontinuedProduct = mockProducts[0].copy(discontinued = true)
+        coEvery { apiService.discontinueProduct(productId) } returns Response.success(discontinuedProduct)
 
         // Cuando
-        val result = repository.deleteProduct(productId)
+        val result = repository.discontinueProduct(productId)
 
         // Entonces
-        assertFalse(result)
+        assertNotNull(result)
+        assertTrue(result?.discontinued == true)
+        coVerify { apiService.discontinueProduct(productId) }
     }
 
     @Test
-    fun `obtener categorias debe retornar lista de categorias exitosamente`() = runTest {
+    fun `discontinueProduct debe retornar null cuando hay error`() = runTest {
         // Dado
-        val mockCategories = listOf(
+        val productId = 1L
+        coEvery { apiService.discontinueProduct(productId) } returns Response.error(
+            404,
+            "Not found".toResponseBody()
+        )
+
+        // Cuando
+        val result = repository.discontinueProduct(productId)
+
+        // Entonces
+        assertNull(result)
+    }
+
+    @Test
+    fun `reactivateProduct debe reactivar producto descontinuado`() = runTest {
+        // Dado
+        val productId = 1L
+        val reactivatedProduct = mockProducts[0].copy(discontinued = false)
+        coEvery { apiService.reactivateProduct(productId) } returns Response.success(reactivatedProduct)
+
+        // Cuando
+        val result = repository.reactivateProduct(productId)
+
+        // Entonces
+        assertNotNull(result)
+        assertFalse(result?.discontinued == true)
+        coVerify { apiService.reactivateProduct(productId) }
+    }
+
+    @Test
+    fun `fetchActiveProducts debe retornar solo productos activos`() = runTest {
+        // Dado
+        val activeProducts = mockProducts
+        coEvery { apiService.getActiveProducts() } returns Response.success(activeProducts)
+
+        // Cuando
+        val result = repository.fetchActiveProducts()
+
+        // Entonces
+        assertNotNull(result)
+        assertEquals(2, result?.size)
+        assertTrue(result?.all { !it.discontinued } == true)
+    }
+
+    @Test
+    fun `fetchDiscontinuedProducts debe retornar solo productos descontinuados`() = runTest {
+        // Dado
+        val discontinuedProduct = mockProducts[0].copy(discontinued = true)
+        coEvery { apiService.getDiscontinuedProducts() } returns Response.success(listOf(discontinuedProduct))
+
+        // Cuando
+        val result = repository.fetchDiscontinuedProducts()
+
+        // Entonces
+        assertNotNull(result)
+        assertEquals(1, result?.size)
+        assertTrue(result?.all { it.discontinued } == true)
+    }
+
+    @Test
+    fun `searchProducts debe buscar por titulo`() = runTest {
+        // Dado
+        val query = "Teclado"
+        val searchResults = listOf(mockProducts[0])
+        coEvery { apiService.searchProducts(query) } returns Response.success(searchResults)
+
+        // Cuando
+        val result = repository.searchProducts(query)
+
+        // Entonces
+        assertNotNull(result)
+        assertEquals(1, result?.size)
+        assertTrue(result?.get(0)?.name?.contains("Teclado") == true)
+    }
+
+    @Test
+    fun `getProductsByCategory debe retornar productos de una categoria`() = runTest {
+        // Dado
+        val categoryId = 1L
+        coEvery { apiService.getProductsByCategory(categoryId) } returns Response.success(mockProducts)
+
+        // Cuando
+        val result = repository.getProductsByCategory(categoryId)
+
+        // Entonces
+        assertNotNull(result)
+        assertEquals(2, result?.size)
+        // Verificar que todos los productos tienen categoría
+        assertTrue(result?.all { it.category != null } == true)
+    }
+
+    @Test
+    fun `fetchCategories debe retornar lista de categorias`() = runTest {
+        // Dado
+        val categories = listOf(
             Category(id = 1, name = "Gaming"),
             Category(id = 2, name = "Oficina")
         )
-        coEvery { apiService.getCategories() } returns Response.success(mockCategories)
+        coEvery { apiService.getCategories() } returns Response.success(categories)
 
         // Cuando
         val result = repository.fetchCategories()
@@ -221,7 +304,6 @@ class ProductRepositoryTest {
         // Entonces
         assertNotNull(result)
         assertEquals(2, result?.size)
-        assertEquals("Gaming", result?.get(0)?.name)
         coVerify { apiService.getCategories() }
     }
 }

@@ -30,6 +30,7 @@ class FavoritesViewModel(
 
     /**
      * Cargar favoritos de un usuario
+     * Filtra automáticamente productos descontinuados
      */
     fun loadFavorites(userId: Long) {
         viewModelScope.launch {
@@ -38,25 +39,33 @@ class FavoritesViewModel(
             try {
                 val favorites = favoritesRepository.getFavoritesByUser(userId)
                 if (favorites != null) {
-                    // Obtener los IDs de productos favoritos
-                    val favoriteProductIds = favorites.map { it.productId }.toSet()
-
                     // Obtener los detalles de cada producto
                     val products = mutableListOf<Product>()
+                    val validFavoriteIds = mutableSetOf<Long>()
+
                     favorites.forEach { favorite ->
                         val product = productRepository.getProductById(favorite.productId)
                         if (product != null) {
-                            products.add(product)
+                            // Verificar si el producto está descontinuado
+                            if (product.discontinued) {
+                                // Eliminar de favoritos en el backend
+                                Log.d("FavoritesViewModel", "Producto descontinuado detectado: ${product.id}, eliminando de favoritos...")
+                                favoritesRepository.removeFromFavorites(userId, product.id)
+                            } else {
+                                // Solo agregar productos activos
+                                products.add(product)
+                                validFavoriteIds.add(product.id)
+                            }
                         }
                     }
 
                     _uiState.value = _uiState.value.copy(
                         favoriteProducts = products,
-                        favoriteIds = favoriteProductIds,
+                        favoriteIds = validFavoriteIds,
                         isLoading = false,
                         error = null
                     )
-                    Log.d("FavoritesViewModel", "Favoritos cargados: ${products.size}")
+                    Log.d("FavoritesViewModel", "Favoritos cargados: ${products.size} productos activos")
                 } else {
                     _uiState.value = _uiState.value.copy(
                         favoriteProducts = emptyList(),

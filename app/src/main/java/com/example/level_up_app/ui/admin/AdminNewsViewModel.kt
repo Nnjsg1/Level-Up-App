@@ -19,11 +19,12 @@ data class AdminNewsState(
     val newsToDelete: News? = null
 )
 
-class AdminNewsViewModel : ViewModel() {
+class AdminNewsViewModel(
+    private val newsRepository: NewsRepository = NewsRepository()
+) : ViewModel() {
     private val _uiState = MutableStateFlow(AdminNewsState())
     val uiState: StateFlow<AdminNewsState> = _uiState.asStateFlow()
 
-    private val newsRepository = NewsRepository()
 
     init {
         loadAllNews()

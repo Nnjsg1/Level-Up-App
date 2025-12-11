@@ -1,10 +1,12 @@
 package com.example.level_up_app.data
 
 import android.util.Log
+import com.example.level_up_app.remote.ApiService
 import com.example.level_up_app.remote.RetrofitInstance
 
-class ProductRepository {
-    private val apiService = RetrofitInstance.api
+class ProductRepository(
+    private val apiService: ApiService = RetrofitInstance.api
+) {
 
     /**
      * Obtiene todos los productos

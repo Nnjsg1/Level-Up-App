@@ -25,7 +25,8 @@ class ProductViewModel : ViewModel() {
     fun loadProducts() {
         viewModelScope.launch {
             _productsState.value = UiState.Loading
-            repository.getAllProducts()
+            // Cargar solo productos activos (no descontinuados)
+            repository.getActiveProducts()
                 .onSuccess { products ->
                     _productsState.value = UiState.Success(products)
                 }
@@ -40,7 +41,9 @@ class ProductViewModel : ViewModel() {
             _productsState.value = UiState.Loading
             repository.searchProducts(query)
                 .onSuccess { products ->
-                    _productsState.value = UiState.Success(products)
+                    // Filtrar productos descontinuados de los resultados
+                    val activeProducts = products.filter { !it.discontinued }
+                    _productsState.value = UiState.Success(activeProducts)
                 }
                 .onFailure { error ->
                     _productsState.value = UiState.Error(error.message ?: "Error desconocido")

@@ -7,6 +7,7 @@ import com.example.level_up_app.data.Category
 import com.example.level_up_app.data.Tag
 import com.example.level_up_app.data.User
 import com.example.level_up_app.data.News
+import com.example.level_up_app.data.Favorite
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -102,5 +103,22 @@ interface ApiService {
 
     @POST("news/{id}/view")
     suspend fun incrementNewsViews(@Path("id") id: Long): Response<News>
+
+    // ============ ENDPOINTS DE FAVORITOS ============
+
+    @GET("favorites")
+    suspend fun getAllFavorites(): Response<List<Favorite>>
+
+    @GET("favorites/user/{userId}")
+    suspend fun getFavoritesByUser(@Path("userId") userId: Int): Response<List<Favorite>>
+
+    @GET("favorites/product/{productId}")
+    suspend fun getFavoritesByProduct(@Path("productId") productId: Long): Response<List<Favorite>>
+
+    @POST("favorites")
+    suspend fun createFavorite(@Body favorite: Favorite): Response<Favorite>
+
+    @DELETE("favorites/{userId}/{productId}")
+    suspend fun deleteFavorite(@Path("userId") userId: Int, @Path("productId") productId: Long): Response<Unit>
 }
 
